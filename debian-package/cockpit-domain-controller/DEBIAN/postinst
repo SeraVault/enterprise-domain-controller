@@ -1,0 +1,17 @@
+#!/bin/bash
+# postinst — runs automatically after package installation.
+# apt has already installed chrony and removed any conflicting time daemon via
+# dependency conflict resolution before this script runs.
+# Real Kerberos config is written by Cockpit when the user provisions/joins a domain.
+
+set -eo pipefail
+
+case "$1" in
+    configure|reconfigure)
+        systemctl enable chrony
+        systemctl start  chrony
+        echo "postinst: chrony enabled and started — NTP is ready to serve domain clients."
+        ;;
+esac
+
+exit 0

@@ -3,27 +3,11 @@
 # Centralized management of domain services based on SYSVOL configurations
 # Manages NTP, DHCP, and other domain services based on FSMO roles and PDC availability
 
-set -e
+set -eo pipefail
 
 SCRIPT_NAME="domain-service-orchestrator"
 LOG_TAG="$SCRIPT_NAME"
 LOCK_FILE="/var/run/domain-service-orchestrator.lock"
-
-# Find domain name from SYSVOL structure
-DOMAIN_NAME=$(find /var/lib/samba/sysvol/ -maxdepth 1 -type d -name "*.local" 2>/dev/null | head -1 | xargs basename 2>/dev/null || echo "guedry.local")
-SYSVOL_BASE="/var/lib/samba/sysvol/${DOMAIN_NAME}"
-
-# SYSVOL configuration directories
-NTP_CONFIG_DIR="${SYSVOL_BASE}/ntp-configs"
-DHCP_CONFIG_DIR="${SYSVOL_BASE}/dhcp-configs"
-SERVICE_CONFIG_DIR="${SYSVOL_BASE}/service-configs"
-
-# Local service configuration files
-CHRONY_CONFIG="/etc/chrony/chrony.conf"
-DHCP_CONFIG="/etc/dhcp/dhcpd.conf"
-
-# Service status tracking
-SERVICES_STATUS_FILE="${SERVICE_CONFIG_DIR}/services-status.conf"
 
 # Logging functions
 log_info() {
@@ -40,6 +24,26 @@ log_debug() {
     logger -t "$LOG_TAG" -p debug "$1"
     echo "[DEBUG] $(date '+%Y-%m-%d %H:%M:%S') $1"
 }
+
+# Find domain name from SYSVOL structure
+DOMAIN_NAME=$(find /var/lib/samba/sysvol/ -maxdepth 1 -type d -name "*.local" 2>/dev/null | head -1 | xargs basename 2>/dev/null || echo "")
+if [[ -z "$DOMAIN_NAME" ]]; then
+    log_error "Cannot determine domain name from SYSVOL - is Samba AD-DC running and joined to a domain?"
+    exit 1
+fi
+SYSVOL_BASE="/var/lib/samba/sysvol/${DOMAIN_NAME}"
+
+# SYSVOL configuration directories
+NTP_CONFIG_DIR="${SYSVOL_BASE}/ntp-configs"
+DHCP_CONFIG_DIR="${SYSVOL_BASE}/dhcp-configs"
+SERVICE_CONFIG_DIR="${SYSVOL_BASE}/service-configs"
+
+# Local service configuration files
+CHRONY_CONFIG="/etc/chrony/chrony.conf"
+DHCP_CONFIG="/etc/dhcp/dhcpd.conf"
+
+# Service status tracking
+SERVICES_STATUS_FILE="${SERVICE_CONFIG_DIR}/services-status.conf"
 
 # Lock management
 acquire_lock() {
@@ -77,15 +81,17 @@ init_sysvol_structure() {
 
     # Create services status file if it doesn't exist
     if [ ! -f "$SERVICES_STATUS_FILE" ]; then
-        cat > "$SERVICES_STATUS_FILE" << 'EOF'
+        local _ts
+        _ts=$(date '+%Y-%m-%d_%H:%M:%S')
+        cat > "$SERVICES_STATUS_FILE" << EOF
 # Domain Services Status Configuration
 # This file tracks the status and configuration of domain services
 # Format: SERVICE=STATUS:LAST_UPDATE:FSMO_ROLE:PDC_HOST
 
-NTP=stopped:$(date '+%Y-%m-%d_%H:%M:%S'):unknown:unknown
-DHCP=stopped:$(date '+%Y-%m-%d_%H:%M:%S'):unknown:unknown
-DNS=stopped:$(date '+%Y-%m-%d_%H:%M:%S'):unknown:unknown
-SAMBA=stopped:$(date '+%Y-%m-%d_%H:%M:%S'):unknown:unknown
+NTP=stopped:${_ts}:unknown:unknown
+DHCP=stopped:${_ts}:unknown:unknown
+DNS=stopped:${_ts}:unknown:unknown
+SAMBA=stopped:${_ts}:unknown:unknown
 EOF
         log_info "Created services status file: $SERVICES_STATUS_FILE"
     fi

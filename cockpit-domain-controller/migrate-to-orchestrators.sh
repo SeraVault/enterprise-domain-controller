@@ -2,7 +2,7 @@
 # Migration Script for SYSVOL-based FSMO Orchestration
 # Safely migrates from individual FSMO managers to unified orchestrators
 
-set -e
+set -eo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 INSTALL_DIR="/usr/local/bin"

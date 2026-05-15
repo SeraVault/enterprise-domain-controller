@@ -3,7 +3,7 @@
 # Automatically seizes FSMO roles when the current holder is unreachable
 # Should be run as root via systemd service
 
-set -e
+set -eo pipefail
 
 SCRIPT_NAME="auto-fsmo-seize"
 LOG_TAG="$SCRIPT_NAME"

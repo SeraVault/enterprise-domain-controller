@@ -738,6 +738,7 @@ export class FSMOManager {
 
     /**
      * Discover PDC FQDN from DNS and system configuration
+     * Returns null if the PDC cannot be determined — callers must handle this.
      */
     async discoverPDCFromDNS() {
         try {
@@ -777,12 +778,12 @@ export class FSMOManager {
                 console.log('Could not read /etc/hosts for PDC discovery');
             }
             
-            // Last resort: return a reasonable guess based on common patterns
-            console.log('Using dc1.guedry.local as final fallback');
-            return 'dc1.guedry.local';
+            // Last resort: log a clear error rather than silently using the wrong host
+            console.error('PDC discovery exhausted all methods - cannot determine PDC host');
+            return null;
         } catch (error) {
             console.error('PDC discovery failed:', error);
-            return 'dc1.guedry.local';
+            return null;
         }
     }
 
@@ -947,7 +948,7 @@ export class FSMOManager {
                 <p>Enter credentials for FSMO role transfer:</p>
                 <div style="margin: 15px 0;">
                     <label for="cred-username" style="display: block; margin-bottom: 5px;">Username:</label>
-                    <input type="text" id="cred-username" value="${defaultUsername}" 
+                    <input type="text" id="cred-username"
                            style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;
                                   background: var(--pf-v5-global--BackgroundColor--200);
                                   color: var(--pf-v5-global--Color--100);">
@@ -973,6 +974,10 @@ export class FSMOManager {
             const passwordInput = document.getElementById('cred-password');
             const cancelBtn = document.getElementById('cred-cancel');
             const okBtn = document.getElementById('cred-ok');
+            // Set the pre-filled username via .value to avoid HTML injection
+            if (defaultUsername) {
+                usernameInput.value = defaultUsername;
+            }
 
             // Focus the password field if username is pre-filled
             if (defaultUsername) {
@@ -990,7 +995,14 @@ export class FSMOManager {
                 const password = passwordInput.value;
 
                 if (!username || !password) {
-                    alert('Please enter both username and password');
+                    const existingError = dialog.querySelector('.cred-error');
+                    if (!existingError) {
+                        const errorMsg = document.createElement('p');
+                        errorMsg.className = 'cred-error';
+                        errorMsg.style.cssText = 'color: var(--pf-v5-global--danger-color--100, #c9190b); margin: 4px 0 0;';
+                        errorMsg.textContent = _("Please enter both username and password");
+                        okBtn.parentNode.insertBefore(errorMsg, okBtn.parentNode.firstChild);
+                    }
                     return;
                 }
 

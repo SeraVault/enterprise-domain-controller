@@ -2,7 +2,7 @@
 # Domain Controller Dependencies Installation Script
 # Installs all required dependencies before package installation
 
-set -e
+set -eo pipefail
 
 # Color codes for output
 RED='\033[0;31m'

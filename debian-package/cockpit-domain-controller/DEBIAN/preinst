@@ -1,0 +1,30 @@
+#!/bin/bash
+# preinst — runs before package and its dependencies are configured.
+# Pre-seeds Kerberos debconf answers with placeholder values so krb5-user
+# and krb5-config install silently.  The real configuration is written by
+# Cockpit (domain-manager.js → updateKerberosConfig) when the user provisions
+# or joins a domain — these placeholder values are always overwritten.
+
+set -eo pipefail
+
+preseed_kerberos() {
+    if ! command -v debconf-set-selections >/dev/null 2>&1; then
+        return 0
+    fi
+
+    debconf-set-selections <<'EOF'
+krb5-config krb5-config/default_realm string PLACEHOLDER.LOCAL
+krb5-config krb5-config/kerberos_servers string placeholder.local
+krb5-config krb5-config/admin_server string placeholder.local
+krb5-config krb5-config/add_servers boolean false
+krb5-config krb5-config/add_servers_realm string PLACEHOLDER.LOCAL
+EOF
+}
+
+case "$1" in
+    install|upgrade)
+        preseed_kerberos
+        ;;
+esac
+
+exit 0

@@ -3,14 +3,34 @@
 # Comprehensive management of all FSMO roles and their associated services
 # Extends domain-service-orchestrator.sh with complete FSMO role management
 
-set -e
+set -eo pipefail
 
 SCRIPT_NAME="fsmo-orchestrator"
 LOG_TAG="$SCRIPT_NAME"
 LOCK_FILE="/var/run/fsmo-orchestrator.lock"
 
+# Logging functions — defined before any code that calls them
+log_info() {
+    logger -t "$LOG_TAG" -p info "$1"
+    echo "[INFO] $(date '+%Y-%m-%d %H:%M:%S') $1"
+}
+
+log_error() {
+    logger -t "$LOG_TAG" -p err "$1"
+    echo "[ERROR] $(date '+%Y-%m-%d %H:%M:%S') $1" >&2
+}
+
+log_debug() {
+    logger -t "$LOG_TAG" -p debug "$1"
+    echo "[DEBUG] $(date '+%Y-%m-%d %H:%M:%S') $1"
+}
+
 # Find domain name from SYSVOL structure
-DOMAIN_NAME=$(find /var/lib/samba/sysvol/ -maxdepth 1 -type d -name "*.local" 2>/dev/null | head -1 | xargs basename 2>/dev/null || echo "guedry.local")
+DOMAIN_NAME=$(find /var/lib/samba/sysvol/ -maxdepth 1 -type d -name "*.local" 2>/dev/null | head -1 | xargs basename 2>/dev/null || echo "")
+if [[ -z "$DOMAIN_NAME" ]]; then
+    log_error "Cannot determine domain name from SYSVOL - is Samba AD-DC running and joined to a domain?"
+    exit 1
+fi
 SYSVOL_BASE="/var/lib/samba/sysvol/${DOMAIN_NAME}"
 
 # SYSVOL configuration directories
@@ -57,22 +77,6 @@ DC_PRIORITY_FILE="${FSMO_CONFIG_DIR}/dc-priority.conf"           # Local DC conf
 DOMAIN_PRIORITIES_FILE="${FSMO_CONFIG_DIR}/domain-dc-priorities.conf"  # Shared SYSVOL config
 SEIZURE_COORDINATION_FILE="${FSMO_CONFIG_DIR}/seizure-coordination.conf"
 SEIZURE_LOCK_TIMEOUT=300  # seconds to hold seizure coordination lock
-
-# Logging functions
-log_info() {
-    logger -t "$LOG_TAG" -p info "$1"
-    echo "[INFO] $(date '+%Y-%m-%d %H:%M:%S') $1"
-}
-
-log_error() {
-    logger -t "$LOG_TAG" -p err "$1"
-    echo "[ERROR] $(date '+%Y-%m-%d %H:%M:%S') $1" >&2
-}
-
-log_debug() {
-    logger -t "$LOG_TAG" -p debug "$1"
-    echo "[DEBUG] $(date '+%Y-%m-%d %H:%M:%S') $1"
-}
 
 # Lock management
 acquire_lock() {

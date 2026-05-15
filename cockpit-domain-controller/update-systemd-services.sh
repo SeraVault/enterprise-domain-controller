@@ -2,7 +2,7 @@
 # Update SystemD Services for SYSVOL-based FSMO Orchestration
 # Migrates from individual FSMO monitors to unified orchestrator
 
-set -e
+set -eo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SYSTEMD_DIR="/etc/systemd/system"

@@ -60,13 +60,58 @@ export class UIManager {
     }
 
     /**
+     * Show an inline alert banner inside the Cockpit page.
+     * @param {'danger'|'success'|'info'|'warning'} type - PatternFly alert type
+     * @param {string} message
+     * @param {number} [autoDismissMs] - if set, auto-removes after this many ms
+     */
+    showAlert(type, message, autoDismissMs) {
+        const icons = { danger: 'exclamation-circle', success: 'check-circle', info: 'info-circle', warning: 'exclamation-triangle' };
+        const containerId = 'dc-alert-container';
+
+        let container = document.getElementById(containerId);
+        if (!container) {
+            container = document.createElement('div');
+            container.id = containerId;
+            container.style.cssText = 'position: sticky; top: 0; z-index: 1000; padding: 0 16px;';
+            const firstCard = document.querySelector('.pf-v5-c-card');
+            if (firstCard) {
+                firstCard.parentNode.insertBefore(container, firstCard);
+            } else {
+                document.body.prepend(container);
+            }
+        }
+
+        const alertId = `dc-alert-${Date.now()}`;
+        const alertEl = document.createElement('div');
+        alertEl.id = alertId;
+        alertEl.className = `pf-v5-c-alert pf-m-${type} pf-m-inline`;
+        alertEl.setAttribute('aria-label', `${type} alert`);
+        alertEl.innerHTML = `
+            <div class="pf-v5-c-alert__icon">
+                <i class="fas fa-${icons[type] || 'info-circle'}" aria-hidden="true"></i>
+            </div>
+            <p class="pf-v5-c-alert__title">${message}</p>
+            <div class="pf-v5-c-alert__action">
+                <button class="pf-v5-c-button pf-m-plain" type="button" aria-label="Close">
+                    <i class="pf-v5-pficon pf-v5-pficon-close" aria-hidden="true"></i>
+                </button>
+            </div>`;
+
+        alertEl.querySelector('button').addEventListener('click', () => alertEl.remove());
+        container.appendChild(alertEl);
+
+        if (autoDismissMs) {
+            setTimeout(() => alertEl.remove(), autoDismissMs);
+        }
+    }
+
+    /**
      * Show error message
      */
     showError(message) {
         console.error('Error:', message);
-        // In a real implementation, this would show a proper toast notification
-        // For now, using alert as placeholder
-        alert("Error: " + message);
+        this.showAlert('danger', message);
     }
 
     /**
@@ -74,9 +119,7 @@ export class UIManager {
      */
     showSuccess(message) {
         console.log('Success:', message);
-        // In a real implementation, this would show a proper toast notification
-        // For now, using alert as placeholder
-        alert("Success: " + message);
+        this.showAlert('success', message, 6000);
     }
 
     /**
@@ -84,9 +127,7 @@ export class UIManager {
      */
     showInfo(message) {
         console.log('Info:', message);
-        // In a real implementation, this would show a proper toast notification
-        // For now, using alert as placeholder
-        alert("Info: " + message);
+        this.showAlert('info', message, 6000);
     }
 
     /**

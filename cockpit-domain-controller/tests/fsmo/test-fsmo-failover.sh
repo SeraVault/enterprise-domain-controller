@@ -2,7 +2,7 @@
 # FSMO Role Failover Testing Script
 # Tests automatic FSMO role seizure and failover capabilities
 
-set -e
+set -eo pipefail
 
 SCRIPT_NAME="test-fsmo-failover"
 LOG_TAG="$SCRIPT_NAME"

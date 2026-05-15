@@ -2,7 +2,7 @@
 # Service Failover Testing Script
 # Tests DHCP, NTP, and other service failover based on FSMO role changes
 
-set -e
+set -eo pipefail
 
 SCRIPT_NAME="test-service-failover"
 LOG_TAG="$SCRIPT_NAME"

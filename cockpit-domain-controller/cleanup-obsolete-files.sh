@@ -2,7 +2,7 @@
 # Cleanup Obsolete FSMO Service Files
 # Removes old FSMO monitoring services replaced by unified orchestrators
 
-set -e
+set -eo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 

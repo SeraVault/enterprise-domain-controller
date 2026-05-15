@@ -2,7 +2,7 @@
 # Installation script for Comprehensive FSMO Role Orchestrator
 # Sets up complete FSMO role management with SYSVOL-based configuration
 
-set -e
+set -eo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SYSTEMD_DIR="/etc/systemd/system"

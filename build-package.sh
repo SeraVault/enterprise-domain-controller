@@ -3,7 +3,7 @@
 # Cockpit Domain Controller Package Update Script
 # This script automates the process of updating the debian package with the latest files
 
-set -e  # Exit on any error
+set -eo pipefail # Exit on any error
 
 # Show help
 show_help() {
@@ -337,7 +337,11 @@ generate_domain_dhcp_config() {
     fi
     
     # Generate DHCP configuration
-    local temp_config="/tmp/dhcpd.conf.domain-integrated"
+    local temp_config
+    temp_config=$(mktemp /tmp/dhcpd.conf.XXXXXX) || {
+        print_warning "Could not create temporary file for DHCP configuration"
+        return 0
+    }
     cat > "$temp_config" << EOF
 # Domain-Integrated DHCP Configuration for $domain_name
 # Auto-generated based on domain controller properties
@@ -1014,6 +1018,9 @@ cp -r "$TEMPLATE_PACKAGE" "$PACKAGE_DIR/$PACKAGE_NAME"
 PACKAGE_PATH="$PACKAGE_DIR/$PACKAGE_NAME"
 print_status "Updating package files in $PACKAGE_PATH"
 
+# Ensure the destination directory exists (template may only contain DEBIAN/)
+mkdir -p "$PACKAGE_PATH/usr/share/cockpit/domain-controller/"
+
 # Copy files to package directory
 cp -r "$SOURCE_DIR"/* "$PACKAGE_PATH/usr/share/cockpit/domain-controller/"
 
@@ -1053,7 +1060,7 @@ if [ $? -eq 0 ]; then
     
     # Show installation command
     print_status "To install the package, run:"
-    echo "sudo dpkg -i $PACKAGE_DIR/${PACKAGE_NAME}.deb"
+    echo "sudo apt-get remove -y systemd-timesyncd ntp openntpd 2>/dev/null; sudo cp $PACKAGE_DIR/${PACKAGE_NAME}.deb /tmp/ && sudo chmod 644 /tmp/${PACKAGE_NAME}.deb && sudo DEBIAN_FRONTEND=noninteractive apt install -y /tmp/${PACKAGE_NAME}.deb"
     
     # Handle installation
     if [ "$NO_INSTALL" = false ]; then
@@ -1076,7 +1083,12 @@ if [ $? -eq 0 ]; then
                 remove_conflicting_time_services
             fi
             
-            if sudo dpkg -i "$PACKAGE_DIR/${PACKAGE_NAME}.deb"; then
+            # Copy to /tmp so apt can access it as _apt (avoids permission warning)
+            tmp_deb=$(mktemp /tmp/cockpit-domain-controller-XXXXXX.deb)
+            cp "$PACKAGE_DIR/${PACKAGE_NAME}.deb" "$tmp_deb"
+            chmod 644 "$tmp_deb"
+            if sudo DEBIAN_FRONTEND=noninteractive apt install -y "$tmp_deb"; then
+                rm -f "$tmp_deb"
                 print_success "Package installed successfully!"
                 
                 # Install FSMO orchestration services
@@ -1158,6 +1170,7 @@ if [ $? -eq 0 ]; then
                     print_status ""
                 fi
             else
+                rm -f "$tmp_deb"
                 print_error "Package installation failed"
                 exit 1
             fi

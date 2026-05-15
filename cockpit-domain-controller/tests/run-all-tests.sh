@@ -5,7 +5,7 @@
 
 echo "DEBUG: Script starting with $# arguments: $*" >&2
 
-set -e
+set -eo pipefail
 
 SCRIPT_NAME="run-all-tests"
 LOG_TAG="$SCRIPT_NAME"

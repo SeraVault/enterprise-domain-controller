@@ -2,7 +2,7 @@
 # SYSVOL Synchronization Testing Script
 # Tests SYSVOL replication and configuration synchronization across domain controllers
 
-set -e
+set -eo pipefail
 
 SCRIPT_NAME="test-sysvol-sync"
 LOG_TAG="$SCRIPT_NAME"

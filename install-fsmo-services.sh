@@ -2,7 +2,7 @@
 # Install FSMO Management Services
 # Run this script as root to install FSMO seizure capabilities
 
-set -e
+set -eo pipefail
 
 if [ "$EUID" -ne 0 ]; then
     echo "This script must be run as root"

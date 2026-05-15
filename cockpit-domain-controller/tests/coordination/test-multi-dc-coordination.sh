@@ -2,7 +2,7 @@
 # Multi-DC Coordination Testing Script
 # Tests priority-based coordination, seizure locks, and anti-race condition mechanisms
 
-set -e
+set -eo pipefail
 
 SCRIPT_NAME="test-multi-dc-coordination"
 LOG_TAG="$SCRIPT_NAME"

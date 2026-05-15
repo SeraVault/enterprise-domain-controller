@@ -2,7 +2,7 @@
 # Network Connectivity Testing Script
 # Tests network connectivity, DNS resolution, and AD service accessibility
 
-set -e
+set -eo pipefail
 
 SCRIPT_NAME="test-network-connectivity"
 LOG_TAG="$SCRIPT_NAME"

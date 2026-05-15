@@ -36,12 +36,20 @@ allow all
 local stratum 10
 `;
 
-        // Append NTP configuration to chrony.conf
-        const configCommand = `echo '${ntpConfig}' >> /etc/chrony/chrony.conf`;
-        
         try {
-            await cockpit.spawn(['sh', '-c', configCommand], { superuser: "try" });
-            console.log('NTP configuration added to chrony.conf');
+            // Write NTP config using tee with stdin to avoid shell injection and duplicate entries.
+            // Replace the entire chrony.conf rather than appending to ensure idempotency.
+            const existingConfig = await cockpit.spawn(['cat', '/etc/chrony/chrony.conf'], { superuser: "try" }).catch(() => '');
+
+            // Remove any previously added block to avoid duplicates
+            const marker = '# NTP configuration for PDC Emulator (added by cockpit-domain-controller)';
+            const cleanedConfig = existingConfig.includes(marker)
+                ? existingConfig.slice(0, existingConfig.indexOf(marker)).trimEnd() + '\n'
+                : existingConfig;
+
+            const newConfig = cleanedConfig + ntpConfig;
+            await cockpit.spawn(['tee', '/etc/chrony/chrony.conf'], { superuser: "try", input: newConfig });
+            console.log('NTP configuration written to chrony.conf');
             
             // Restart chrony service to apply changes
             await cockpit.spawn(['systemctl', 'restart', 'chrony'], { superuser: "try" });
@@ -81,12 +89,18 @@ allow all
 local stratum 10
 `;
 
-        // Append NTP configuration to chrony.conf
-        const configCommand = `echo '${ntpConfig}' >> /etc/chrony/chrony.conf`;
-        
         try {
-            await cockpit.spawn(['sh', '-c', configCommand], { superuser: "try" });
-            console.log('NTP configuration added to chrony.conf');
+            // Write NTP config using tee with stdin to avoid shell injection and duplicate entries.
+            const marker = '# NTP configuration for additional domain controller (added by cockpit-domain-controller)';
+            const existingConfig = await cockpit.spawn(['cat', '/etc/chrony/chrony.conf'], { superuser: "try" }).catch(() => '');
+
+            const cleanedConfig = existingConfig.includes(marker)
+                ? existingConfig.slice(0, existingConfig.indexOf(marker)).trimEnd() + '\n'
+                : existingConfig;
+
+            const newConfig = cleanedConfig + ntpConfig;
+            await cockpit.spawn(['tee', '/etc/chrony/chrony.conf'], { superuser: "try", input: newConfig });
+            console.log('NTP configuration written to chrony.conf');
             
             // Restart chrony service to apply changes
             await cockpit.spawn(['systemctl', 'restart', 'chrony'], { superuser: "try" });

@@ -3,7 +3,7 @@
 # Seizes FSMO roles from a failed domain controller
 # Part of cockpit-domain-controller package
 
-set -e
+set -eo pipefail
 
 SCRIPT_NAME="fsmo-seize"
 LOG_TAG="$SCRIPT_NAME"
@@ -108,10 +108,10 @@ seize_fsmo_roles() {
         
         if samba-tool fsmo seize --role="$role" --force 2>/dev/null; then
             log_info "Successfully seized $role master role"
-            ((seized_count++))
+            seized_count=$((seized_count + 1))
         else
             log_error "Failed to seize $role master role"
-            ((failed_count++))
+            failed_count=$((failed_count + 1))
         fi
     done
     

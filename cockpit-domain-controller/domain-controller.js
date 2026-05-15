@@ -1140,6 +1140,11 @@ time.cloudflare.com"></textarea>
                         <div class="pf-v5-c-modal-box__body" id="log-streaming-modal-body">
                             <pre id="log-output" class="log-output-container"></pre>
                         </div>
+                        <footer class="pf-v5-c-modal-box__footer">
+                            <button id="close-log-streaming-modal-footer" class="pf-v5-c-button pf-m-primary" type="button">
+                                ${_("Close")}
+                            </button>
+                        </footer>
                     </div>
                 </div>
             </div>
@@ -1281,6 +1286,11 @@ time.cloudflare.com"></textarea>
         const closeLogStreamingModalBtn = document.getElementById('close-log-streaming-modal');
         if (closeLogStreamingModalBtn) {
             closeLogStreamingModalBtn.addEventListener('click', () => this.uiManager.hideLogModal());
+        }
+
+        const closeLogStreamingModalFooterBtn = document.getElementById('close-log-streaming-modal-footer');
+        if (closeLogStreamingModalFooterBtn) {
+            closeLogStreamingModalFooterBtn.addEventListener('click', () => this.uiManager.hideLogModal());
         }
         
         // Auto-generate NetBIOS name from domain name
@@ -1546,9 +1556,29 @@ time.cloudflare.com"></textarea>
                         console.log('Samba AD-DC service is active, checking member status');
                         this.checkDomainMemberStatusAsync().then(resolve);
                     } else {
-                        console.log('Samba AD-DC service is not active');
-                        this.updateDomainStatus(null);
-                        resolve();
+                        console.log('Samba AD-DC service is not active, checking for existing domain config...');
+                        // Check smb.conf for a previously-provisioned domain before giving up
+                        cockpit.file('/etc/samba/smb.conf').read()
+                            .then(content => {
+                                const realmMatch = content && content.match(/^\s*realm\s*=\s*(.+)/im);
+                                if (realmMatch) {
+                                    const domain = realmMatch[1].trim().toLowerCase();
+                                    console.log('Found existing domain in smb.conf:', domain);
+                                    this.updateDomainStatus({
+                                        domain: domain,
+                                        role: 'Domain Controller',
+                                        site: 'Default-First-Site-Name',
+                                        forest: domain
+                                    });
+                                } else {
+                                    this.updateDomainStatus(null);
+                                }
+                                resolve();
+                            })
+                            .catch(() => {
+                                this.updateDomainStatus(null);
+                                resolve();
+                            });
                     }
                 })
                 .catch(error => {
@@ -2013,6 +2043,7 @@ time.cloudflare.com"></textarea>
                         })
                         .then(() => {
                             console.log('Samba AD DC service enabled and started successfully');
+                            this.configureFirewallForDomainController();
                             
                             this.hideLoading();
                             this.getDomainSiteInfo(domainName).then(actualSite => {
@@ -2031,6 +2062,7 @@ time.cloudflare.com"></textarea>
                                 });
                             });
                             this.showSuccess(_("Domain provisioned successfully!"));
+                            setTimeout(() => this.uiManager.hideLogModal(), 3000);
                             
                             // Refresh service status after a short delay
                             setTimeout(() => {
@@ -2040,6 +2072,7 @@ time.cloudflare.com"></textarea>
                         .catch(serviceError => {
                             console.warn('Service start failed but provision succeeded:', serviceError);
                             // Still show success but with a note about service
+                            this.configureFirewallForDomainController();
                             this.hideLoading();
                             this.getDomainSiteInfo(domainName).then(actualSite => {
                                 this.updateDomainStatus({
@@ -2057,6 +2090,7 @@ time.cloudflare.com"></textarea>
                                 });
                             });
                             this.showSuccess(_("Domain provisioned successfully! You may need to manually start the samba-ad-dc service."));
+                            setTimeout(() => this.uiManager.hideLogModal(), 3000);
                             setTimeout(() => {
                                 this.checkServiceStatus();
                             }, 2000);
@@ -2064,6 +2098,7 @@ time.cloudflare.com"></textarea>
                 });
             })
             .catch(error => {
+                this.uiManager.hideLogModal();
                 this.hideLoading();
                 console.error('Provision failed:', error);
                 this.showError(_("Failed to provision domain: ") + error.message);
@@ -2112,28 +2147,23 @@ time.cloudflare.com"></textarea>
     }
     
     testDomainControllerConnectivity(dcIP, domainName) {
-        // Test basic network connectivity first
+        // Step 1: basic ICMP reachability
         return cockpit.spawn(['ping', '-c', '2', '-W', '3', dcIP], { superuser: "try" })
-            .then(() => {
-                console.log('Ping test successful');
-                // Test SMB port connectivity
-                return cockpit.spawn(['nc', '-z', '-w', '5', dcIP, '445'], { superuser: "try" });
+            .catch(() => {
+                throw new Error('Network unreachable — cannot ping ' + dcIP);
             })
             .then(() => {
-                console.log('SMB port test successful');
-                // Skip DNS resolution test - DNS will be configured during join process
-                console.log('Connectivity tests passed, DNS will be configured during join');
-                return Promise.resolve();
-            })
-            .catch(error => {
-                console.error('Connectivity test failed:', error);
-                if (error.message.includes('ping')) {
-                    throw new Error('Network unreachable - cannot ping ' + dcIP);
-                } else if (error.message.includes('nc') || error.message.includes('Connection refused')) {
-                    throw new Error('SMB port (445) is not accessible on ' + dcIP);
-                } else {
-                    throw new Error('Connectivity test failed: ' + error.message);
-                }
+                console.log('Ping OK, testing CLDAP (UDP/TCP 389)...');
+                // Step 2: CLDAP/LDAP — exactly what samba-tool domain join uses first.
+                // If this fails with "transport-connection refused", the join will fail
+                // immediately, before the SMB/Kerberos phase.
+                return cockpit.spawn(['samba-tool', 'domain', 'info', dcIP], { superuser: "try" })
+                    .catch(() => {
+                        throw new Error(
+                            'Cannot contact DC on ' + dcIP + ' via CLDAP (UDP/TCP 389). ' +
+                            'Run on the source DC: ufw allow 389/tcp && ufw allow 389/udp'
+                        );
+                    });
             });
     }
     
@@ -2232,6 +2262,7 @@ time.cloudflare.com"></textarea>
                     })
                     .then(() => {
                         console.log('Samba AD DC service enabled and started successfully');
+                        this.configureFirewallForDomainController();
                         
                         // Configure NTP for additional domain controller (gets time from PDC)
                         this.configureNTPForAdditionalDC(domainControllerIP);
@@ -2256,6 +2287,7 @@ time.cloudflare.com"></textarea>
                             });
                         });
                         this.showSuccess(_("Successfully joined domain as Domain Controller!"));
+                        setTimeout(() => this.uiManager.hideLogModal(), 3000);
                         
                         // Refresh service status after a short delay
                         setTimeout(() => {
@@ -2265,6 +2297,7 @@ time.cloudflare.com"></textarea>
                     .catch(serviceError => {
                         console.warn('Service start failed but join succeeded:', serviceError);
                         // Still show success but with a note about service
+                        this.configureFirewallForDomainController();
                         this.configureNTPForAdditionalDC(domainControllerIP);
                         
                         // Update Kerberos configuration for RSAT compatibility
@@ -2286,16 +2319,46 @@ time.cloudflare.com"></textarea>
                             });
                         });
                         this.showSuccess(_("Joined domain successfully! You may need to manually start the samba-ad-dc service."));
+                        setTimeout(() => this.uiManager.hideLogModal(), 3000);
                         setTimeout(() => {
                             this.checkServiceStatus();
                         }, 2000);
                     });
             })
             .catch(error => {
+                this.uiManager.hideLogModal();
                 this.hideLoading();
                 console.error('Join failed:', error);
                 this.showError(_("Failed to join domain: ") + error.message);
             });
+    }
+
+    configureFirewallForDomainController() {
+        // Open all ports required by a Samba Active Directory Domain Controller
+        const rules = [
+            ['ufw', 'allow', '53/tcp'],           // DNS
+            ['ufw', 'allow', '53/udp'],           // DNS
+            ['ufw', 'allow', '88/tcp'],           // Kerberos
+            ['ufw', 'allow', '88/udp'],           // Kerberos
+            ['ufw', 'allow', '123/udp'],          // NTP
+            ['ufw', 'allow', '135/tcp'],          // RPC Endpoint Mapper
+            ['ufw', 'allow', '389/tcp'],          // LDAP
+            ['ufw', 'allow', '389/udp'],          // CLDAP (site discovery — required for DC join)
+            ['ufw', 'allow', '445/tcp'],          // SMB
+            ['ufw', 'allow', '464/tcp'],          // kpasswd
+            ['ufw', 'allow', '464/udp'],          // kpasswd
+            ['ufw', 'allow', '636/tcp'],          // LDAPS
+            ['ufw', 'allow', '3268/tcp'],         // Global Catalog
+            ['ufw', 'allow', '3269/tcp'],         // Global Catalog SSL
+            ['ufw', 'allow', '49152:65535/tcp'],  // RPC dynamic ports
+            ['ufw', 'allow', '49152:65535/udp'],  // RPC dynamic ports UDP
+        ];
+        return Promise.all(
+            rules.map(cmd =>
+                cockpit.spawn(cmd, { superuser: "try" })
+                    .catch(err => console.log('UFW rule failed:', cmd.join(' '), err.message))
+            )
+        ).then(() => console.log('Firewall configured for Domain Controller'));
     }
 
     leaveDomain() {
