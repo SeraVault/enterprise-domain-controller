@@ -1,37 +1,43 @@
-# Cockpit Domain Controller
+# Enterprise Domain Controller
 
-A comprehensive web-based interface for managing Samba Active Directory Domain Controllers through the Cockpit web console. This module provides enterprise-grade domain controller management with automatic failover capabilities, FSMO role management, and modern web-based administration.
+A complete, self-managing enterprise Active Directory domain controller platform built on Samba AD-DC. This is not just a web UI — it is a full domain controller deployment system with 24/7 background service orchestration, automatic FSMO-driven failover, and SYSVOL-replicated configuration management across any number of domain controllers. The Cockpit web interface (`https://your-server:9090`) is the management console for a system that operates continuously and autonomously in the background via systemd timers.
+
+## What Makes This Different
+
+Most Samba AD-DC setups require manual administration for every DHCP/NTP configuration change and have no failover when the PDC Emulator role moves. This platform treats domain controller role changes as events that automatically reconfigure the entire service layer — no administrator intervention required.
+
+**The system handles things Microsoft AD requires manual work for:**
+- When a DC becomes PDC Emulator, it automatically activates DHCP, becomes the authoritative NTP source, and pulls the current service config from SYSVOL
+- When a DC loses the PDC Emulator role, it automatically stops DHCP, reconfigures NTP to sync with the new PDC, and saves its config to SYSVOL
+- All of this happens via systemd timers running every 5 minutes, whether or not anyone has a browser open
 
 ## 🚀 Features
 
-### Enterprise Active Directory Replacement
-**Cockpit Domain Controller provides superior infrastructure automation that complements Microsoft RSAT tools for a complete enterprise AD solution:**
+### Platform Core (Runs 24/7 Without the UI)
+- **FSMO Orchestrator**: systemd timer that continuously monitors FSMO role assignments and reconfigures services accordingly
+- **Domain Service Orchestrator**: Manages DHCP, NTP, and DNS service lifecycle based on current PDC Emulator holder
+- **SYSVOL Config Replication**: Service configurations (DHCP, NTP) stored in SYSVOL so they replicate to all DCs automatically
+- **Multi-DC Coordination**: Distributed lock mechanism prevents race conditions when multiple DCs detect a PDC role change simultaneously
+- **Anti-Split-Brain Protection**: Priority-based coordination ensures only one DC activates DHCP at any time
 
-- **🎯 Perfect Division of Labor**: Cockpit handles infrastructure automation, RSAT manages AD objects
-- **🔄 Intelligent Automation**: Features Microsoft AD lacks (automatic DHCP/NTP failover)
-- **💰 Cost Effective**: No Windows Server licensing, no CALs required
-- **🛠️ Familiar Management**: Existing Windows admins use standard RSAT tools
-- **🚀 Enterprise Grade**: Production-ready with advanced failover capabilities
-
-### Core Domain Controller Management
-- **Domain Provisioning**: Create new Active Directory domains with full configuration
+### Domain Controller Management (via Cockpit UI at port 9090)
+- **Domain Provisioning**: Deploy a new Samba Active Directory domain
 - **Domain Joining**: Join existing domains as additional domain controllers
-- **Domain Statistics**: Real-time monitoring of users, computers, groups, and OUs
-- **Service Management**: Control Samba AD-DC, NTP, and DHCP services
-- **FSMO Role Monitoring**: Track and display all five FSMO roles with live updates
+- **FSMO Role Monitoring**: Live status of all five FSMO roles with role transfer controls
+- **Service Management**: Start, stop, and configure Samba AD-DC, NTP, and DHCP
+- **Network & Firewall**: Interface selection and automatic AD port configuration
 
 ### FSMO-Based Service Automation
-- **DHCP Failover**: Automatic DHCP service failover based on PDC Emulator role
-- **NTP Hierarchy**: Automatic time synchronization hierarchy with PDC as authoritative source
-- **Configuration Replication**: Service configurations stored in SYSVOL for automatic replication
-- **Service Monitoring**: Real-time status monitoring with automated failover detection
+- **DHCP Failover**: Only the current PDC Emulator runs DHCP — automatic handoff when the role moves
+- **NTP Hierarchy**: PDC Emulator is authoritative NTP source (Stratum 10); all other DCs sync from it (Stratum 11)
+- **Zero-Touch Role Transitions**: Service reconfiguration happens automatically within one timer cycle (5 minutes)
 
-### Advanced Management Features
+### Enterprise Operational Features
 - **Network Interface Selection**: Choose appropriate network interfaces for domain services
-- **Firewall Integration**: Automatic firewall configuration for AD services
-- **NTP Configuration**: Intelligent NTP hierarchy based on domain controller roles
-- **Security Hardening**: Proper service isolation and security configurations
-- **Comprehensive Logging**: Detailed logging for troubleshooting and auditing
+- **Firewall Integration**: Automatic firewall configuration for all AD service ports
+- **Security Hardening**: systemd service isolation and minimal privilege execution
+- **Comprehensive Test Suite**: Automated tests for FSMO failover, SYSVOL sync, multi-DC coordination, service failover, and network connectivity
+- **Comprehensive Logging**: Full journald integration for all orchestration activity
 
 ## 🏗️ Architecture
 
@@ -339,17 +345,35 @@ The system implements Microsoft Active Directory best practices for service mana
 ### File Structure
 ```
 cockpit-domain-controller/
-├── manifest.json                 # Cockpit module manifest
-├── domain-controller.html        # Main HTML interface
-├── domain-controller.js          # Frontend JavaScript logic
-├── domain-controller.css         # Styling and theme support
-├── dhcp-fsmo-manager.sh          # DHCP failover management script
-├── dhcp-fsmo-monitor.service     # DHCP monitoring systemd service
-├── dhcp-fsmo-monitor.timer       # DHCP monitoring timer
-├── ntp-fsmo-manager.sh           # NTP hierarchy management script
-├── ntp-fsmo-monitor.service      # NTP monitoring systemd service
-├── ntp-fsmo-monitor.timer        # NTP monitoring timer
-└── README.md                     # This documentation
+├── manifest.json                       # Cockpit module manifest
+├── index.html                          # Main web interface
+├── domain-controller.js                # Frontend application logic
+├── domain-controller.css               # Styling and theme support
+├── fsmo-orchestrator.sh                # Core FSMO role monitoring & service automation
+├── fsmo-orchestrator.service           # systemd service unit
+├── fsmo-orchestrator.timer             # systemd timer (runs every 5 minutes)
+├── domain-service-orchestrator.sh      # DHCP/NTP/DNS lifecycle management
+├── domain-service-orchestrator.service # systemd service unit
+├── domain-service-orchestrator.timer   # systemd timer
+├── fsmo-seize.sh                       # Manual FSMO role seizure script
+├── auto-fsmo-seize.sh                  # Automated seizure on DC loss detection
+├── install-fsmo-orchestrator.sh        # Orchestrator installation script
+├── migrate-to-orchestrators.sh         # Migration from legacy service scripts
+├── modules/
+│   ├── domain-manager.js               # Domain provisioning/joining logic
+│   ├── fsmo-manager.js                 # FSMO role management UI logic
+│   ├── network-manager.js              # Network interface and DNS management
+│   ├── service-manager.js              # Service start/stop/status management
+│   ├── sysvol-manager.js               # SYSVOL config read/write operations
+│   ├── test-manager.js                 # Built-in diagnostic test runner
+│   └── ui-manager.js                   # UI state, notifications, theme
+└── tests/
+    ├── run-all-tests.sh                # Comprehensive test suite runner
+    ├── fsmo/test-fsmo-failover.sh      # FSMO role seizure and failover tests
+    ├── sysvol/test-sysvol-sync.sh      # SYSVOL replication tests
+    ├── coordination/test-multi-dc-coordination.sh  # Multi-DC race condition tests
+    ├── services/test-service-failover.sh           # DHCP/NTP failover tests
+    └── network/test-network-connectivity.sh        # AD port and DNS tests
 ```
 
 ### Key Components
@@ -427,11 +451,12 @@ dpkg-deb --build cockpit-domain-controller_1.0.42-1
 - **DHCP Failover**: Failover event tracking and logging
 
 ### Log Locations
-- **Cockpit Logs**: `journalctl -u cockpit`
+- **Cockpit**: `journalctl -u cockpit`
 - **Samba AD-DC**: `journalctl -u samba-ad-dc`
-- **DHCP Failover**: `journalctl -u dhcp-fsmo-monitor`
-- **NTP Management**: `journalctl -u ntp-fsmo-monitor`
-- **Chrony**: `journalctl -u chrony`
+- **FSMO Orchestrator**: `journalctl -u fsmo-orchestrator`
+- **Domain Service Orchestrator**: `journalctl -u domain-service-orchestrator`
+- **Chrony (NTP)**: `journalctl -u chrony`
+- **DHCP**: `journalctl -u isc-dhcp-server`
 
 ### Alerting
 - **systemd Journal**: Centralized logging with log levels
@@ -461,32 +486,32 @@ journalctl -u samba-ad-dc -f
 
 #### DHCP Failover Not Working
 ```bash
-# Check DHCP FSMO monitor
-systemctl status dhcp-fsmo-monitor.timer
-journalctl -u dhcp-fsmo-monitor -f
+# Check orchestrator timer
+systemctl status fsmo-orchestrator.timer
+journalctl -u fsmo-orchestrator -f
 
 # Verify PDC Emulator role
 samba-tool fsmo show
 
-# Check SYSVOL replication
+# Check SYSVOL DHCP config
 ls -la /var/lib/samba/sysvol/*/dhcp-configs/
 
-# Manual failover test
-/usr/local/bin/dhcp-fsmo-manager.sh
+# Manually trigger orchestration
+sudo /usr/share/cockpit/domain-controller/fsmo-orchestrator.sh --orchestrate
 ```
 
 #### NTP Synchronization Issues
 ```bash
-# Check NTP hierarchy
+# Check NTP status
 chronyc tracking
 chronyc sources
 
-# Verify NTP FSMO monitor
-systemctl status ntp-fsmo-monitor.timer
-journalctl -u ntp-fsmo-monitor -f
+# Check orchestrator
+systemctl status domain-service-orchestrator.timer
+journalctl -u domain-service-orchestrator -f
 
-# Manual NTP configuration
-/usr/local/bin/ntp-fsmo-manager.sh
+# Manually trigger service orchestration
+sudo /usr/share/cockpit/domain-controller/domain-service-orchestrator.sh --orchestrate
 
 # Check time offset
 chronyc sourcestats
