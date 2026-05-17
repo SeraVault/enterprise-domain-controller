@@ -52,7 +52,7 @@ The test suite automatically discovers all domain controllers in your environmen
 ### Run All Tests
 ```bash
 # Run comprehensive test suite (auto-discovers all DCs)
-cd /home/dguedry/Documents/ad-server/cockpit-domain-controller/tests
+cd /usr/share/cockpit/domain-controller/tests
 ./run-all-tests.sh
 
 # Example output: "Discovered 5 domain controllers via DNS: dc1, dc2, dc3, dc4, dc5"
@@ -251,7 +251,7 @@ sudo nano /var/lib/samba/sysvol/*/fsmo-configs/domain-dc-priorities.conf
 Set up regular health checks:
 ```bash
 # Add to crontab for daily testing
-echo "0 2 * * * /home/dguedry/Documents/ad-server/cockpit-domain-controller/tests/run-all-tests.sh --quick > /var/log/dc-health-check.log 2>&1" | sudo crontab -
+echo "0 2 * * * /usr/share/cockpit/domain-controller/tests/run-all-tests.sh --quick > /var/log/dc-health-check.log 2>&1" | sudo crontab -
 ```
 
 ## 🛠️ Troubleshooting
@@ -259,7 +259,7 @@ echo "0 2 * * * /home/dguedry/Documents/ad-server/cockpit-domain-controller/test
 ### Test Script Issues
 ```bash
 # Ensure all scripts are executable
-chmod +x /home/dguedry/Documents/ad-server/cockpit-domain-controller/tests/**/*.sh
+chmod +x /usr/share/cockpit/domain-controller/tests/**/*.sh
 
 # Check script dependencies
 which samba-tool chronyc dig nslookup nc

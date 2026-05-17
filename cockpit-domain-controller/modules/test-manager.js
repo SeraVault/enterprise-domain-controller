@@ -431,9 +431,9 @@ export class TestManager {
         try {
             const proc = cockpit.spawn(['hostname', '-d']);
             const result = await proc;
-            return result.trim() || 'guedry.local';
+            return result.trim() || 'example.local';
         } catch (error) {
-            return 'guedry.local';
+            return 'example.local';
         }
     }
 

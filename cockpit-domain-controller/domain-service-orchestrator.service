@@ -7,7 +7,7 @@ PartOf=samba-ad-dc.service
 
 [Service]
 Type=oneshot
-ExecStart=/home/dguedry/Documents/ad-server/cockpit-domain-controller/domain-service-orchestrator.sh --orchestrate
+ExecStart=/usr/share/cockpit/domain-controller/domain-service-orchestrator.sh --orchestrate
 User=root
 Group=root
 StandardOutput=journal

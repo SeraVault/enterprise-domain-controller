@@ -73,7 +73,7 @@ echo "Updating systemd service configuration..."
 # Migrate existing SYSVOL data
 echo "Migrating existing SYSVOL configurations..."
 
-DOMAIN_NAME=$(find /var/lib/samba/sysvol/ -maxdepth 1 -type d -name "*.local" 2>/dev/null | head -1 | xargs basename 2>/dev/null || echo "guedry.local")
+DOMAIN_NAME=$(find /var/lib/samba/sysvol/ -maxdepth 1 -type d -name "*.local" 2>/dev/null | head -1 | xargs basename 2>/dev/null || echo "example.local")
 SYSVOL_BASE="/var/lib/samba/sysvol/$DOMAIN_NAME"
 
 # Ensure new SYSVOL structure exists

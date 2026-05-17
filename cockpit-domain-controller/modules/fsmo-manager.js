@@ -1178,8 +1178,29 @@ export class FSMOManager {
     async forceDomainReplication() {
         console.log('Forcing domain replication to resolve FSMO inconsistencies...');
         this.uiManager.showLoading('Forcing domain replication...');
-        
-        const replicationProcess = cockpit.spawn(['samba-tool', 'drs', 'replicate', 'dc2.guedry.local', 'dc1.guedry.local', 'CN=Configuration,DC=guedry,DC=local'], { superuser: "try" });
+
+        // Discover the local domain and DC FQDNs dynamically
+        let domainName = '';
+        let localDC = '';
+        try {
+            localDC = (await cockpit.spawn(['hostname', '-f'], { superuser: 'try' })).trim();
+            domainName = (await cockpit.spawn(['hostname', '-d'], { superuser: 'try' })).trim();
+        } catch (e) {
+            console.warn('Could not determine hostname/domain:', e);
+        }
+
+        if (!domainName || !localDC) {
+            this.uiManager.hideLoading();
+            this.uiManager.showError('Cannot determine domain name or local DC hostname. Replication aborted.');
+            return;
+        }
+
+        // Build the replication NC from domain name (e.g. example.local -> DC=example,DC=local)
+        const domainNC = domainName.split('.').map(p => `DC=${p}`).join(',');
+        const replicationProcess = cockpit.spawn(
+            ['samba-tool', 'drs', 'replicate', localDC, localDC, `CN=Configuration,${domainNC}`],
+            { superuser: "try" }
+        );
         
         const timeoutId = setTimeout(() => {
             console.log('Replication command timed out after 30 seconds');

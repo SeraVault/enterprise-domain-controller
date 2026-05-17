@@ -3949,7 +3949,7 @@ udp_preference_limit = 0
     // Extract server name from Active Directory Distinguished Name
     extractServerName(dn) {
         // Try to extract server name from DN format
-        // CN=NTDS Settings,CN=DEBIAN,CN=Servers,CN=Default-First-Site-Name,CN=Sites,CN=Configuration,DC=guedry,DC=local
+        // CN=NTDS Settings,CN=DC1,CN=Servers,CN=Default-First-Site-Name,CN=Sites,CN=Configuration,DC=example,DC=local
         
         if (!dn || typeof dn !== 'string') {
             return dn;
@@ -4249,7 +4249,7 @@ INTERFACESv6=""
             .then(output => {
                 const lines = output.split('\n');
                 const domainLine = lines.find(line => line.includes('Domain') && line.includes(':'));
-                const actualDomain = domainLine ? domainLine.split(':')[1].trim() : 'guedry.local';
+                const actualDomain = domainLine ? domainLine.split(':')[1].trim() : '';
                 
                 // Get current network information
                 const interfaceInfo = this.networkInterfaces.find(iface => iface.name === 'enp0s3');
@@ -4282,7 +4282,7 @@ INTERFACESv6=""
                 const interfaceIP = interfaceInfo ? interfaceInfo.ips[0] : '192.168.1.174';
                 const networkBase = interfaceIP.split('.').slice(0, 3).join('.');
                 
-                document.getElementById('dhcp-domain-name').value = 'guedry.local';
+                document.getElementById('dhcp-domain-name').value = '';
                 document.getElementById('dhcp-dns-servers').value = interfaceIP;
                 document.getElementById('dhcp-subnet').value = networkBase + '.0';
                 document.getElementById('dhcp-netmask').value = '255.255.255.0';
@@ -4748,7 +4748,7 @@ time.cloudflare.com`;
         }
         
         // Create NTP configuration templates for both PDC and non-PDC roles
-        const domainName = 'guedry.local'; // This should be dynamically determined
+        const domainName = await cockpit.spawn(['hostname', '-d'], { superuser: 'try' }).then(r => r.trim()).catch(() => '');
         const serverList = externalServers.split('\n').filter(s => s.trim()).map(s => `pool ${s.trim()}`).join('\n');
         
         const pdcConfig = `# NTP Configuration for PDC Emulator

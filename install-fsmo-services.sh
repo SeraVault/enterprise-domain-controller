@@ -54,7 +54,7 @@ systemctl start ntp-fsmo-monitor.timer
 echo "Creating SYSVOL directories..."
 
 # Create SYSVOL directories
-DOMAIN_NAME=$(find /var/lib/samba/sysvol/ -maxdepth 1 -type d -name "*.local" 2>/dev/null | head -1 | xargs basename 2>/dev/null || echo "guedry.local")
+DOMAIN_NAME=$(find /var/lib/samba/sysvol/ -maxdepth 1 -type d -name "*.local" 2>/dev/null | head -1 | xargs basename 2>/dev/null || echo "example.local")
 
 mkdir -p "/var/lib/samba/sysvol/${DOMAIN_NAME}/dhcp-configs"
 mkdir -p "/var/lib/samba/sysvol/${DOMAIN_NAME}/ntp-configs"

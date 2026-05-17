@@ -14,7 +14,7 @@ MASTER_LOG="/tmp/dc-comprehensive-test.log"
 # Test configuration
 TEST_BASE_DIR="cockpit-domain-controller/tests"
 REPORTS_DIR="$TEST_BASE_DIR/reports"
-DOMAIN_NAME=$(find /var/lib/samba/sysvol/ -maxdepth 1 -type d -name "*.local" 2>/dev/null | head -1 | xargs basename 2>/dev/null || echo "guedry.local")
+DOMAIN_NAME=$(find /var/lib/samba/sysvol/ -maxdepth 1 -type d -name "*.local" 2>/dev/null | head -1 | xargs basename 2>/dev/null || echo "example.local")
 
 # Test suite definitions
 declare -A TEST_SUITES=(

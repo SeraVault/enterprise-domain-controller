@@ -9,7 +9,7 @@ LOG_TAG="$SCRIPT_NAME"
 TEST_LOG="/tmp/fsmo-failover-test.log"
 
 # Test configuration
-DOMAIN_NAME=$(find /var/lib/samba/sysvol/ -maxdepth 1 -type d -name "*.local" 2>/dev/null | head -1 | xargs basename 2>/dev/null || echo "guedry.local")
+DOMAIN_NAME=$(find /var/lib/samba/sysvol/ -maxdepth 1 -type d -name "*.local" 2>/dev/null | head -1 | xargs basename 2>/dev/null || echo "example.local")
 SYSVOL_BASE="/var/lib/samba/sysvol/${DOMAIN_NAME}"
 FSMO_CONFIG_DIR="${SYSVOL_BASE}/fsmo-configs"
 
@@ -314,7 +314,10 @@ test_systemd_integration() {
 
 # Generate test report
 generate_report() {
-    local report_file="/home/dguedry/Documents/ad-server/cockpit-domain-controller/tests/reports/fsmo-failover-test-$(date +%Y%m%d-%H%M%S).txt"
+    local script_dir
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local report_file="${script_dir}/../reports/fsmo-failover-test-$(date +%Y%m%d-%H%M%S).txt"
+    mkdir -p "$(dirname "$report_file")"
     
     cat > "$report_file" << EOF
 FSMO Failover Test Report

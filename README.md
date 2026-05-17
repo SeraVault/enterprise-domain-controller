@@ -636,4 +636,4 @@ This project is licensed under the GNU Lesser General Public License v2.1 or lat
 
 **Cockpit Domain Controller** - Enterprise-grade Samba Active Directory management through modern web interface with automatic failover capabilities and RSAT compatibility.
 
-For more information, visit: [https://github.com/dguedry/cockpit-domain-controller](https://github.com/dguedry/cockpit-domain-controller)
+For more information, visit: [https://github.com/SeraVault/enterprise-domain-controller](https://github.com/SeraVault/enterprise-domain-controller)
