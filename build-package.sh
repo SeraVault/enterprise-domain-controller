@@ -1036,6 +1036,14 @@ print_status "Updating control file version..."
 sed -i "s/^Version: .*/Version: ${CURRENT_VERSION}-1/" "$CONTROL_FILE"
 print_success "Control file updated"
 
+# Update README with new version
+README_FILE="$SCRIPT_DIR/README.md"
+if [ -f "$README_FILE" ]; then
+    sed -i "s/cockpit-domain-controller_[0-9.]*-[0-9]*/cockpit-domain-controller_${CURRENT_VERSION}-1/g" "$README_FILE"
+    sed -i "s/enterprise-domain-controller_[0-9.]*-[0-9]*/enterprise-domain-controller_${CURRENT_VERSION}-1/g" "$README_FILE"
+    print_success "README.md updated to version ${CURRENT_VERSION}"
+fi
+
 # Navigate to package directory
 cd "$PACKAGE_DIR"
 
