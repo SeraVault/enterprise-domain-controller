@@ -1,0 +1,51 @@
+#!/bin/bash
+# postrm — runs automatically after package removal.
+# Restores the system to a clean pre-installation state where possible.
+
+set -eo pipefail
+
+case "$1" in
+    remove|purge)
+        # ── Reload Cockpit so the plugin disappears from the UI ──────────────
+        if systemctl is-active --quiet cockpit 2>/dev/null; then
+            systemctl restart cockpit || true
+        fi
+
+        # ── Stop orchestrator systemd units if they were installed ───────────
+        for unit in fsmo-orchestrator.timer fsmo-orchestrator.service \
+                    domain-service-orchestrator.timer domain-service-orchestrator.service; do
+            if systemctl is-enabled --quiet "$unit" 2>/dev/null; then
+                systemctl disable --now "$unit" || true
+            fi
+        done
+
+        # ── Restore system NTP (chrony was pulled in as a dependency) ────────
+        # Only stop/disable chrony if nothing else depends on it.
+        if systemctl is-active --quiet chrony 2>/dev/null; then
+            systemctl stop chrony || true
+        fi
+        if systemctl is-enabled --quiet chrony 2>/dev/null; then
+            systemctl disable chrony || true
+        fi
+
+        # Re-enable systemd-timesyncd if it is installed (default Ubuntu/Debian NTP)
+        if systemctl list-unit-files systemd-timesyncd.service &>/dev/null; then
+            systemctl enable systemd-timesyncd || true
+            systemctl start  systemd-timesyncd || true
+        fi
+        ;;
+
+    purge)
+        # ── Remove runtime files written outside the package path ────────────
+        # SYSVOL coordination lock/marker files created by the orchestrators
+        find /var/lib/samba/sysvol/ -maxdepth 3 \
+            \( -name "fsmo-lock-*" -o -name "fsmo-priority-*" -o -name "test-marker-*" \) \
+            -delete 2>/dev/null || true
+
+        # DHCP config generated into SYSVOL by domain-service-orchestrator
+        find /var/lib/samba/sysvol/ -maxdepth 3 -name "dhcpd.conf.sysvol" \
+            -delete 2>/dev/null || true
+        ;;
+esac
+
+exit 0

@@ -28,8 +28,8 @@ log_debug() {
 # Find domain name from SYSVOL structure
 DOMAIN_NAME=$(find /var/lib/samba/sysvol/ -maxdepth 1 -type d -name "*.local" 2>/dev/null | head -1 | xargs basename 2>/dev/null || echo "")
 if [[ -z "$DOMAIN_NAME" ]]; then
-    log_error "Cannot determine domain name from SYSVOL - is Samba AD-DC running and joined to a domain?"
-    exit 1
+    log_info "No domain configured yet. To get started, open Cockpit at https://$(hostname -f 2>/dev/null || hostname):9090 and use the Domain Controller panel to provision a new domain or join an existing one."
+    exit 0
 fi
 SYSVOL_BASE="/var/lib/samba/sysvol/${DOMAIN_NAME}"
 

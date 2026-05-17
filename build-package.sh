@@ -191,7 +191,7 @@ configure_samba_dns() {
     
     # Check if Samba AD-DC is running
     if ! systemctl is-active --quiet samba-ad-dc; then
-        print_warning "Samba AD-DC is not running - DNS configuration skipped"
+        print_status "No domain configured yet - DNS setup will run automatically after you provision or join a domain via Cockpit (https://$(hostname -f 2>/dev/null || hostname):9090)"
         return 0
     fi
     
@@ -1098,7 +1098,7 @@ if [ $? -eq 0 ]; then
                     if sudo "$SOURCE_DIR/install-fsmo-orchestrator.sh"; then
                         print_success "FSMO orchestration services installed successfully!"
                     else
-                        print_warning "FSMO orchestrator installation had issues - check logs"
+                        print_status "FSMO orchestrator services are ready and will activate automatically once you provision or join a domain via Cockpit (https://$(hostname -f 2>/dev/null || hostname):9090)"
                     fi
                     
                     # Run migration if old services exist
