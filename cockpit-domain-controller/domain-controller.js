@@ -4429,62 +4429,12 @@ host dc-server {
 }
 `;
         
-        // Store DHCP configuration in LDAP
-        const dhcpLdif = `# DHCP Configuration Update for ${domainName}
-dn: CN=DHCP-Config,CN=Configuration,DC=${domainName.split('.').join(',DC=')}
-changetype: modify
-replace: dhcpSubnet
-dhcpSubnet: ${subnet}
--
-replace: dhcpNetmask
-dhcpNetmask: ${netmask}
--
-replace: dhcpRangeStart
-dhcpRangeStart: ${rangeStart}
--
-replace: dhcpRangeEnd
-dhcpRangeEnd: ${rangeEnd}
--
-replace: dhcpGateway
-dhcpGateway: ${gateway}
--
-replace: dhcpDnsServers
-dhcpDnsServers: ${dnsServers}
--
-replace: dhcpDomainName
-dhcpDomainName: ${domainName}
--
-replace: dhcpLeaseTime
-dhcpLeaseTime: ${leaseTime}
--
-replace: dhcpMaxLeaseTime
-dhcpMaxLeaseTime: ${maxLeaseTime}
--
-replace: extensionData
-extensionData: ${btoa(dhcpConfig)}
--
-replace: whenCreated
-whenCreated: ${new Date().toISOString()}
-`;
-
-        // Save configuration to SYSVOL and LDAP
+        // Save configuration to SYSVOL and deploy
         cockpit.spawn(['mkdir', '-p', `/var/lib/samba/sysvol/${domainName}/dhcp-configs`], { superuser: "try" })
             .then(() => {
                 return cockpit.spawn(['tee', `/var/lib/samba/sysvol/${domainName}/dhcp-configs/dhcpd.conf.active`], { 
                     superuser: "try" 
                 }).input(dhcpConfig);
-            })
-            .then(() => {
-                // Save LDIF for LDAP update
-                return cockpit.spawn(['tee', `/var/lib/samba/sysvol/${domainName}/dhcp-configs/dhcp-config-update.ldif`], { 
-                    superuser: "try" 
-                }).input(dhcpLdif);
-            })
-            .then(() => {
-                // Update DHCP configuration in LDAP
-                return cockpit.spawn(['ldbmodify', '-H', `/var/lib/samba/private/sam.ldb`, `/var/lib/samba/sysvol/${domainName}/dhcp-configs/dhcp-config-update.ldif`], { 
-                    superuser: "try" 
-                });
             })
             .then(() => {
                 // Copy to system location
@@ -4497,7 +4447,7 @@ whenCreated: ${new Date().toISOString()}
                 return cockpit.spawn(['systemctl', 'restart', 'isc-dhcp-server'], { superuser: "try" });
             })
             .then(() => {
-                this.showSuccess(_("DHCP configuration updated in LDAP and deployed successfully!"));
+                this.showSuccess(_("DHCP configuration updated and deployed successfully!"));
                 this.hideDhcpEditor();
                 this.checkIndividualService('isc-dhcp-server', 'dhcp-status');
             })
