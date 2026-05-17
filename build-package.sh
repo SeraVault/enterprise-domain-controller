@@ -986,7 +986,7 @@ print_status "Current version: $CURRENT_VERSION"
 print_status "Using source files from: $SOURCE_DIR"
 
 # Check if we need to update package directory
-PACKAGE_NAME="cockpit-domain-controller_${CURRENT_VERSION}-1"
+PACKAGE_NAME="enterprise-domain-controller_${CURRENT_VERSION}-1"
 
 # Use the unversioned package directory as template or find the latest versioned one
 TEMPLATE_PACKAGE="$PACKAGE_DIR/cockpit-domain-controller"
@@ -1041,7 +1041,7 @@ cd "$PACKAGE_DIR"
 
 # Remove old .deb file with same version
 print_status "Removing old .deb files for version ${CURRENT_VERSION}..."
-rm -f "cockpit-domain-controller_${CURRENT_VERSION}-1.deb"
+rm -f "enterprise-domain-controller_${CURRENT_VERSION}-1.deb"
 
 # Build the new package
 print_status "Building debian package..."
@@ -1084,7 +1084,7 @@ if [ $? -eq 0 ]; then
             fi
             
             # Copy to /tmp so apt can access it as _apt (avoids permission warning)
-            tmp_deb=$(mktemp /tmp/cockpit-domain-controller-XXXXXX.deb)
+            tmp_deb=$(mktemp /tmp/enterprise-domain-controller-XXXXXX.deb)
             cp "$PACKAGE_DIR/${PACKAGE_NAME}.deb" "$tmp_deb"
             chmod 644 "$tmp_deb"
             if sudo DEBIAN_FRONTEND=noninteractive apt install -y "$tmp_deb"; then

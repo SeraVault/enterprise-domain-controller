@@ -84,31 +84,41 @@ Most Samba AD-DC setups require manual administration for every DHCP/NTP configu
 
 ## 🔧 Installation
 
-### Package Installation
-```bash
-# Download and install the package
-sudo dpkg -i cockpit-domain-controller_1.0.42-1.deb
+### Download
 
-# Install dependencies if needed
-sudo apt-get install -f
+Pre-built `.deb` packages are available on the [GitHub Releases](https://github.com/SeraVault/enterprise-domain-controller/releases) page.
+
+```bash
+# Download the latest release
+curl -LO https://github.com/SeraVault/enterprise-domain-controller/releases/latest/download/enterprise-domain-controller.deb
+
+# Install
+sudo apt install ./enterprise-domain-controller.deb
 ```
 
-### Manual Installation
-```bash
-# Clone the repository
-git clone https://github.com/your-org/cockpit-domain-controller.git
-cd cockpit-domain-controller
+`apt install ./` is preferred over `dpkg -i` because it automatically resolves and installs all dependencies (Samba, Cockpit, Chrony, etc.) in one step.
 
-# Install files
-sudo cp -r * /usr/share/cockpit/domain-controller/
-sudo systemctl restart cockpit
+### Build from Source
+
+```bash
+git clone https://github.com/SeraVault/enterprise-domain-controller.git
+cd enterprise-domain-controller
+
+# Build the .deb package
+./build-package.sh
+
+# Build and install in one step
+./build-package.sh -y
 ```
+
+Requires `dpkg-deb` (install with `sudo apt install dpkg`).
 
 ### Post-Installation Setup
-1. **Access Cockpit**: Navigate to `https://your-server:9090`
-2. **Domain Controller**: Click on "Domain Controller" in the sidebar
-3. **Network Configuration**: Ensure proper network interface configuration
-4. **Firewall Rules**: Verify firewall rules are properly configured
+1. Open Cockpit at `https://your-server:9090`
+2. Click **Domain Controller** in the left sidebar
+3. Choose **Provision New Domain** or **Join Existing Domain**
+
+The background orchestration services (FSMO monitoring, DHCP/NTP failover) activate automatically once the domain is provisioned.
 
 ## 🎯 RSAT Integration - Best of Both Worlds
 
@@ -558,7 +568,7 @@ dhcp-lease-list
 ## 🤝 Contributing
 
 ### Development Setup
-1. **Clone Repository**: `git clone https://github.com/your-org/cockpit-domain-controller.git`
+1. **Clone Repository**: `git clone https://github.com/SeraVault/enterprise-domain-controller.git`
 2. **Install Dependencies**: Set up development environment
 3. **Testing**: Test changes in development environment
 4. **Documentation**: Update documentation for changes
