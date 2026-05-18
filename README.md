@@ -412,16 +412,16 @@ cockpit-domain-controller/
 #### Debian Package Creation
 ```bash
 # Build package structure
-mkdir -p cockpit-domain-controller_1.0.93-1/usr/share/cockpit/domain-controller
-mkdir -p cockpit-domain-controller_1.0.93-1/DEBIAN
+mkdir -p cockpit-domain-controller_1.0.94-1/usr/share/cockpit/domain-controller
+mkdir -p cockpit-domain-controller_1.0.94-1/DEBIAN
 
 # Copy files
-cp -r src/* cockpit-domain-controller_1.0.93-1/usr/share/cockpit/domain-controller/
-cp debian/control cockpit-domain-controller_1.0.93-1/DEBIAN/
-cp debian/postinst cockpit-domain-controller_1.0.93-1/DEBIAN/
+cp -r src/* cockpit-domain-controller_1.0.94-1/usr/share/cockpit/domain-controller/
+cp debian/control cockpit-domain-controller_1.0.94-1/DEBIAN/
+cp debian/postinst cockpit-domain-controller_1.0.94-1/DEBIAN/
 
 # Build package
-dpkg-deb --build cockpit-domain-controller_1.0.93-1
+dpkg-deb --build cockpit-domain-controller_1.0.94-1
 ```
 
 #### Version Management

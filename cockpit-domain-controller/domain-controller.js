@@ -81,10 +81,14 @@ class DomainController {
 
     render() {
         this.container.innerHTML = `
-            <div class="domain-controller-header">
-                <h1>${_("Domain Controller Management")}</h1>
-            </div>
-            
+            <section class="pf-v5-c-page__main-section pf-m-light pf-m-shadow-bottom">
+                <div class="pf-v5-l-flex pf-m-align-items-center pf-m-gap-sm">
+                    <h1 class="pf-v5-c-title pf-m-2xl">${_("Domain Controller")}</h1>
+                </div>
+            </section>
+
+            <section class="pf-v5-c-page__main-section">
+
             <div class="pf-v5-c-card domain-status-card">
                 <div class="pf-v5-c-card__header">
                     <div class="pf-v5-c-card__header-main">
@@ -155,7 +159,7 @@ class DomainController {
                                         <div class="service-item">
                                             <div class="service-info">
                                                 <div class="service-name">
-                                                    <i class="fas fa-server"></i>
+                                                    <i class="pf-v5-pficon pf-v5-pficon-server"></i>
                                                     ${_("Samba AD-DC")}
                                                 </div>
                                             </div>
@@ -163,7 +167,7 @@ class DomainController {
                                                 <div id="samba-status" class="service-status-text">${_("Checking...")}</div>
                                                 <div class="service-actions">
                                                     <button id="restart-samba" class="pf-v5-c-button pf-m-secondary pf-m-small service-restart-btn" type="button" title="${_("Restart samba-ad-dc service")}">
-                                                        <i class="fas fa-redo" aria-hidden="true"></i>
+                                                        <i class="pf-v5-pficon pf-v5-pficon-rebooting" aria-hidden="true"></i>
                                                         ${_("Restart")}
                                                     </button>
                                                 </div>
@@ -173,7 +177,7 @@ class DomainController {
                                         <div class="service-item">
                                             <div class="service-info">
                                                 <div class="service-name">
-                                                    <i class="fas fa-clock"></i>
+                                                    <i class="pf-v5-pficon pf-v5-pficon-pending"></i>
                                                     ${_("NTP (Chrony)")}
                                                 </div>
                                             </div>
@@ -181,11 +185,11 @@ class DomainController {
                                                 <div id="ntp-service-status" class="service-status-text">${_("Checking...")}</div>
                                                 <div class="service-actions">
                                                     <button id="restart-ntp" class="pf-v5-c-button pf-m-secondary pf-m-small" type="button" title="${_("Restart chrony service")}">
-                                                        <i class="fas fa-redo" aria-hidden="true"></i>
+                                                        <i class="pf-v5-pficon pf-v5-pficon-rebooting" aria-hidden="true"></i>
                                                         ${_("Restart")}
                                                     </button>
                                                     <button id="manage-ntp" class="pf-v5-c-button pf-m-primary pf-m-small" type="button" title="${_("Manage NTP hierarchy")}">
-                                                        <i class="fas fa-cog" aria-hidden="true"></i>
+                                                        <i class="pf-v5-pficon pf-v5-pficon-service" aria-hidden="true"></i>
                                                         ${_("Configure")}
                                                     </button>
                                                 </div>
@@ -195,10 +199,10 @@ class DomainController {
                                         <div class="service-item">
                                             <div class="service-info">
                                                 <div class="service-name">
-                                                    <i class="fas fa-network-wired"></i>
+                                                    <i class="pf-v5-pficon pf-v5-pficon-network"></i>
                                                     ${_("DHCP Server")}
                                                     <span id="dhcp-fsmo-indicator" class="fsmo-indicator hidden" title="${_("DHCP active on PDC Emulator")}">
-                                                        <i class="fas fa-crown"></i>
+                                                        <i class="dc-icon dc-icon-crown"></i>
                                                     </span>
                                                 </div>
                                                 <div id="dhcp-fsmo-status" class="dhcp-fsmo-status-text"></div>
@@ -207,11 +211,11 @@ class DomainController {
                                                 <div id="dhcp-status" class="service-status-text">${_("Checking...")}</div>
                                                 <div class="service-actions">
                                                     <button id="restart-dhcp" class="pf-v5-c-button pf-m-secondary pf-m-small" type="button" title="${_("Restart isc-dhcp-server service")}">
-                                                        <i class="fas fa-redo" aria-hidden="true"></i>
+                                                        <i class="pf-v5-pficon pf-v5-pficon-rebooting" aria-hidden="true"></i>
                                                         ${_("Restart")}
                                                     </button>
                                                     <button id="manage-dhcp" class="pf-v5-c-button pf-m-primary pf-m-small" type="button" title="${_("Manage DHCP configuration")}">
-                                                        <i class="fas fa-cog" aria-hidden="true"></i>
+                                                        <i class="pf-v5-pficon pf-v5-pficon-service" aria-hidden="true"></i>
                                                         ${_("Configure")}
                                                     </button>
                                                 </div>
@@ -225,16 +229,16 @@ class DomainController {
                                         <h5>${_("NTP Configuration")}
                                             <button id="ntp-help-btn" class="pf-v5-c-button pf-m-link pf-m-inline" type="button" 
                                                     title="${_("PDC Emulator syncs with external NTP servers (Stratum 10). Other DCs sync with PDC (Stratum 11). Domain clients sync with any DC. Configuration updates automatically when PDC role changes.")}">
-                                                <i class="fas fa-question-circle" aria-hidden="true"></i>
+                                                <i class="pf-v5-pficon pf-v5-pficon-help" aria-hidden="true"></i>
                                             </button>
                                         </h5>
                                         <div class="ntp-actions">
                                             <button id="edit-ntp-config" class="pf-v5-c-button pf-m-primary pf-m-small" type="button">
-                                                <i class="fas fa-edit" aria-hidden="true"></i>
+                                                <i class="pf-v5-pficon pf-v5-pficon-edit" aria-hidden="true"></i>
                                                 ${_("Configure")}
                                             </button>
                                             <button id="sync-ntp-config" class="pf-v5-c-button pf-m-secondary pf-m-small" type="button">
-                                                <i class="fas fa-sync" aria-hidden="true"></i>
+                                                <i class="pf-v5-pficon pf-v5-pficon-rebalance" aria-hidden="true"></i>
                                                 ${_("Sync")}
                                             </button>
                                             <button id="close-ntp-management" class="pf-v5-c-button pf-m-plain pf-m-small" type="button" aria-label="Close">
@@ -264,16 +268,16 @@ class DomainController {
                                         <h5>${_("DHCP Configuration")}
                                             <button id="dhcp-help-btn" class="pf-v5-c-button pf-m-link pf-m-inline" type="button" 
                                                     title="${_("Only the PDC Emulator runs DHCP service. Configuration is stored in SYSVOL for replication. DHCP automatically fails over if PDC role transfers.")}">
-                                                <i class="fas fa-question-circle" aria-hidden="true"></i>
+                                                <i class="pf-v5-pficon pf-v5-pficon-help" aria-hidden="true"></i>
                                             </button>
                                         </h5>
                                         <div class="dhcp-actions">
                                             <button id="edit-dhcp-config" class="pf-v5-c-button pf-m-primary pf-m-small" type="button">
-                                                <i class="fas fa-edit" aria-hidden="true"></i>
+                                                <i class="pf-v5-pficon pf-v5-pficon-edit" aria-hidden="true"></i>
                                                 ${_("Configure")}
                                             </button>
                                             <button id="sync-dhcp-config" class="pf-v5-c-button pf-m-secondary pf-m-small" type="button">
-                                                <i class="fas fa-sync" aria-hidden="true"></i>
+                                                <i class="pf-v5-pficon pf-v5-pficon-rebalance" aria-hidden="true"></i>
                                                 ${_("Sync")}
                                             </button>
                                             <button id="close-dhcp-management" class="pf-v5-c-button pf-m-plain pf-m-small" type="button" aria-label="Close">
@@ -303,11 +307,11 @@ class DomainController {
                                         <div class="fsmo-header">
                                             <h5>${_("FSMO Roles")}</h5>
                                             <button id="refresh-fsmo" class="pf-v5-c-button pf-m-secondary pf-m-small" type="button" title="${_("Refresh FSMO role information")}">
-                                                <i class="fas fa-sync" aria-hidden="true"></i>
+                                                <i class="pf-v5-pficon pf-v5-pficon-rebalance" aria-hidden="true"></i>
                                                 ${_("Refresh")}
                                             </button>
                                             <button id="force-replication" class="pf-v5-c-button pf-m-warning pf-m-small" type="button" title="${_("Force domain replication to resolve FSMO inconsistencies")}">
-                                                <i class="fas fa-exchange-alt" aria-hidden="true"></i>
+                                                <i class="pf-v5-pficon pf-v5-pficon-migration" aria-hidden="true"></i>
                                                 ${_("Sync Replication")}
                                             </button>
                                         </div>
@@ -317,85 +321,85 @@ class DomainController {
                                         <div id="fsmo-roles-display" class="fsmo-roles-grid">
                                             <div class="fsmo-role-card">
                                                 <div class="fsmo-role-header">
-                                                    <i class="fas fa-clock"></i>
+                                                    <i class="pf-v5-pficon pf-v5-pficon-pending"></i>
                                                     <h6>${_("PDC Emulator")}</h6>
                                                 </div>
                                                 <div class="fsmo-role-holder" id="pdc-holder">${_("Loading...")}</div>
                                                 <div class="fsmo-role-description">${_("Handles time synchronization, password changes, and acts as the primary domain controller for legacy systems.")}</div>
                                                 <div class="fsmo-role-actions">
                                                     <button id="transfer-pdc" class="pf-v5-c-button pf-m-secondary pf-m-small fsmo-transfer-btn" type="button" title="${_("Transfer PDC Emulator role to this server")}">
-                                                        <i class="fas fa-exchange-alt"></i> ${_("Transfer Here")}
+                                                        <i class="pf-v5-pficon pf-v5-pficon-migration"></i> ${_("Transfer Here")}
                                                     </button>
                                                     <button id="seize-pdc" class="pf-v5-c-button pf-m-danger pf-m-small fsmo-seize-btn" type="button" title="${_("Seize PDC Emulator role (emergency only)")}">
-                                                        <i class="fas fa-exclamation-triangle"></i> ${_("Seize")}
+                                                        <i class="pf-v5-pficon pf-v5-pficon-warning-triangle"></i> ${_("Seize")}
                                                     </button>
                                                 </div>
                                             </div>
                                             
                                             <div class="fsmo-role-card">
                                                 <div class="fsmo-role-header">
-                                                    <i class="fas fa-key"></i>
+                                                    <i class="pf-v5-pficon pf-v5-pficon-key"></i>
                                                     <h6>${_("RID Master")}</h6>
                                                 </div>
                                                 <div class="fsmo-role-holder" id="rid-holder">${_("Loading...")}</div>
                                                 <div class="fsmo-role-description">${_("Allocates unique RID (Relative Identifier) pools to domain controllers for creating security principals.")}</div>
                                                 <div class="fsmo-role-actions">
                                                     <button id="transfer-rid" class="pf-v5-c-button pf-m-secondary pf-m-small fsmo-transfer-btn" type="button" title="${_("Transfer RID Master role to this server")}">
-                                                        <i class="fas fa-exchange-alt"></i> ${_("Transfer Here")}
+                                                        <i class="pf-v5-pficon pf-v5-pficon-migration"></i> ${_("Transfer Here")}
                                                     </button>
                                                     <button id="seize-rid" class="pf-v5-c-button pf-m-danger pf-m-small fsmo-seize-btn" type="button" title="${_("Seize RID Master role (emergency only)")}">
-                                                        <i class="fas fa-exclamation-triangle"></i> ${_("Seize")}
+                                                        <i class="pf-v5-pficon pf-v5-pficon-warning-triangle"></i> ${_("Seize")}
                                                     </button>
                                                 </div>
                                             </div>
                                             
                                             <div class="fsmo-role-card">
                                                 <div class="fsmo-role-header">
-                                                    <i class="fas fa-database"></i>
+                                                    <i class="pf-v5-pficon pf-v5-pficon-storage-domain"></i>
                                                     <h6>${_("Infrastructure Master")}</h6>
                                                 </div>
                                                 <div class="fsmo-role-holder" id="infrastructure-holder">${_("Loading...")}</div>
                                                 <div class="fsmo-role-description">${_("Maintains references to objects in other domains and updates group-to-user references.")}</div>
                                                 <div class="fsmo-role-actions">
                                                     <button id="transfer-infrastructure" class="pf-v5-c-button pf-m-secondary pf-m-small fsmo-transfer-btn" type="button" title="${_("Transfer Infrastructure Master role to this server")}">
-                                                        <i class="fas fa-exchange-alt"></i> ${_("Transfer Here")}
+                                                        <i class="pf-v5-pficon pf-v5-pficon-migration"></i> ${_("Transfer Here")}
                                                     </button>
                                                     <button id="seize-infrastructure" class="pf-v5-c-button pf-m-danger pf-m-small fsmo-seize-btn" type="button" title="${_("Seize Infrastructure Master role (emergency only)")}">
-                                                        <i class="fas fa-exclamation-triangle"></i> ${_("Seize")}
+                                                        <i class="pf-v5-pficon pf-v5-pficon-warning-triangle"></i> ${_("Seize")}
                                                     </button>
                                                 </div>
                                             </div>
                                             
                                             <div class="fsmo-role-card">
                                                 <div class="fsmo-role-header">
-                                                    <i class="fas fa-sitemap"></i>
+                                                    <i class="pf-v5-pficon pf-v5-pficon-topology"></i>
                                                     <h6>${_("Schema Master")}</h6>
                                                 </div>
                                                 <div class="fsmo-role-holder" id="schema-holder">${_("Loading...")}</div>
                                                 <div class="fsmo-role-description">${_("Controls modifications to the Active Directory schema (forest-wide role).")}</div>
                                                 <div class="fsmo-role-actions">
                                                     <button id="transfer-schema" class="pf-v5-c-button pf-m-secondary pf-m-small fsmo-transfer-btn" type="button" title="${_("Transfer Schema Master role to this server")}">
-                                                        <i class="fas fa-exchange-alt"></i> ${_("Transfer Here")}
+                                                        <i class="pf-v5-pficon pf-v5-pficon-migration"></i> ${_("Transfer Here")}
                                                     </button>
                                                     <button id="seize-schema" class="pf-v5-c-button pf-m-danger pf-m-small fsmo-seize-btn" type="button" title="${_("Seize Schema Master role (emergency only)")}">
-                                                        <i class="fas fa-exclamation-triangle"></i> ${_("Seize")}
+                                                        <i class="pf-v5-pficon pf-v5-pficon-warning-triangle"></i> ${_("Seize")}
                                                     </button>
                                                 </div>
                                             </div>
                                             
                                             <div class="fsmo-role-card">
                                                 <div class="fsmo-role-header">
-                                                    <i class="fas fa-users"></i>
+                                                    <i class="pf-v5-pficon pf-v5-pficon-users"></i>
                                                     <h6>${_("Domain Naming Master")}</h6>
                                                 </div>
                                                 <div class="fsmo-role-holder" id="domain-naming-holder">${_("Loading...")}</div>
                                                 <div class="fsmo-role-description">${_("Controls addition and removal of domains in the forest (forest-wide role).")}</div>
                                                 <div class="fsmo-role-actions">
                                                     <button id="transfer-domain-naming" class="pf-v5-c-button pf-m-secondary pf-m-small fsmo-transfer-btn" type="button" title="${_("Transfer Domain Naming Master role to this server")}">
-                                                        <i class="fas fa-exchange-alt"></i> ${_("Transfer Here")}
+                                                        <i class="pf-v5-pficon pf-v5-pficon-migration"></i> ${_("Transfer Here")}
                                                     </button>
                                                     <button id="seize-domain-naming" class="pf-v5-c-button pf-m-danger pf-m-small fsmo-seize-btn" type="button" title="${_("Seize Domain Naming Master role (emergency only)")}">
-                                                        <i class="fas fa-exclamation-triangle"></i> ${_("Seize")}
+                                                        <i class="pf-v5-pficon pf-v5-pficon-warning-triangle"></i> ${_("Seize")}
                                                     </button>
                                                 </div>
                                             </div>
@@ -408,7 +412,7 @@ class DomainController {
                             <div class="pf-v5-c-empty-state pf-m-sm">
                                 <div class="pf-v5-c-empty-state__content">
                                     <div class="pf-v5-c-empty-state__icon">
-                                        <i class="fas fa-server" aria-hidden="true"></i>
+                                        <i class="pf-v5-pficon pf-v5-pficon-server" aria-hidden="true"></i>
                                     </div>
                                     <h2 class="pf-v5-c-title pf-m-lg">${_("No Domain Connection")}</h2>
                                     <div class="pf-v5-c-empty-state__body">
@@ -573,7 +577,7 @@ class DomainController {
                                             aria-expanded="false" 
                                             aria-controls="provision-advanced-content">
                                         <span class="pf-v5-c-accordion__toggle-icon">
-                                            <i class="fas fa-angle-right" aria-hidden="true"></i>
+                                            <i class="dc-icon dc-icon-angle-right" aria-hidden="true"></i>
                                         </span>
                                         <span class="pf-v5-c-accordion__toggle-text">${_("Advanced Options")}</span>
                                     </button>
@@ -854,7 +858,7 @@ class DomainController {
                                             aria-expanded="false" 
                                             aria-controls="join-advanced-content">
                                         <span class="pf-v5-c-accordion__toggle-icon">
-                                            <i class="fas fa-angle-right" aria-hidden="true"></i>
+                                            <i class="dc-icon dc-icon-angle-right" aria-hidden="true"></i>
                                         </span>
                                         <span class="pf-v5-c-accordion__toggle-text">${_("Advanced Options")}</span>
                                     </button>
@@ -931,7 +935,7 @@ class DomainController {
                         <h4>${_("Leave Domain")}</h4>
                         <div class="pf-v5-c-alert pf-m-warning domain-warning">
                             <div class="pf-v5-c-alert__icon">
-                                <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                                <i class="pf-v5-pficon pf-v5-pficon-warning-triangle" aria-hidden="true"></i>
                             </div>
                             <div class="pf-v5-c-alert__title">
                                 ${_("This will remove the server from the domain and reset all domain configurations.")}
@@ -1014,7 +1018,7 @@ time.cloudflare.com"></textarea>
                         </div>
                         <footer class="pf-v5-c-modal-box__footer">
                             <button id="save-ntp-config" class="pf-v5-c-button pf-m-primary" type="button">
-                                <i class="fas fa-save" aria-hidden="true"></i>
+                                <i class="pf-v5-pficon pf-v5-pficon-save" aria-hidden="true"></i>
                                 ${_("Save & Deploy")}
                             </button>
                             <button id="cancel-ntp-edit" class="pf-v5-c-button pf-m-link" type="button">
@@ -1112,7 +1116,7 @@ time.cloudflare.com"></textarea>
                         </div>
                         <footer class="pf-v5-c-modal-box__footer">
                             <button id="save-dhcp-config" class="pf-v5-c-button pf-m-primary" type="button">
-                                <i class="fas fa-save" aria-hidden="true"></i>
+                                <i class="pf-v5-pficon pf-v5-pficon-save" aria-hidden="true"></i>
                                 ${_("Save & Deploy")}
                             </button>
                             <button id="cancel-dhcp-edit" class="pf-v5-c-button pf-m-link" type="button">
@@ -1148,6 +1152,7 @@ time.cloudflare.com"></textarea>
                     </div>
                 </div>
             </div>
+            </section>
         `;
 
         this.bindEvents();
@@ -1339,11 +1344,11 @@ time.cloudflare.com"></textarea>
         if (isExpanded) {
             toggle.setAttribute('aria-expanded', 'false');
             content.hidden = true;
-            icon.className = 'fas fa-angle-right';
+            icon.className = 'dc-icon dc-icon-angle-right';
         } else {
             toggle.setAttribute('aria-expanded', 'true');
             content.hidden = false;
-            icon.className = 'fas fa-angle-down';
+            icon.className = 'dc-icon dc-icon-angle-down';
         }
     }
 
@@ -3502,7 +3507,7 @@ udp_preference_limit = 0
         const originalIcon = refreshButton.innerHTML;
         
         // Show loading state
-        refreshButton.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> ' + _("Refreshing...");
+        refreshButton.innerHTML = '<i class="pf-v5-pficon pf-v5-pficon-spinner dc-spinner fa-spin" aria-hidden="true"></i> ' + _("Refreshing...");
         refreshButton.disabled = true;
         
         // Load FSMO roles
@@ -3520,7 +3525,7 @@ udp_preference_limit = 0
         const originalIcon = forceReplicationBtn.innerHTML;
         
         // Show loading state
-        forceReplicationBtn.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> ' + _("Syncing...");
+        forceReplicationBtn.innerHTML = '<i class="pf-v5-pficon pf-v5-pficon-spinner dc-spinner fa-spin" aria-hidden="true"></i> ' + _("Syncing...");
         forceReplicationBtn.disabled = true;
         
         // Force domain replication using samba-tool
@@ -3698,7 +3703,7 @@ udp_preference_limit = 0
         // Update service labels for domain members
         const sambaServiceName = document.querySelector('.service-item .service-name');
         if (sambaServiceName && sambaServiceName.textContent.includes('Samba AD-DC')) {
-            sambaServiceName.innerHTML = `<i class="fas fa-users"></i>${_("Domain Authentication (Winbind)")}`;
+            sambaServiceName.innerHTML = `<i class="pf-v5-pficon pf-v5-pficon-users"></i>${_("Domain Authentication (Winbind)")}`;
         }
         
         // Update restart button tooltip
@@ -3742,7 +3747,7 @@ udp_preference_limit = 0
         const originalIcon = restartButton.innerHTML;
         
         // Show loading state
-        restartButton.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> ' + _("Restarting...");
+        restartButton.innerHTML = '<i class="pf-v5-pficon pf-v5-pficon-spinner dc-spinner fa-spin" aria-hidden="true"></i> ' + _("Restarting...");
         restartButton.disabled = true;
         
         statusElement.textContent = _("Restarting...");
@@ -3861,7 +3866,7 @@ udp_preference_limit = 0
         const button = document.getElementById('sync-dhcp-config');
         const originalText = button.innerHTML;
         
-        button.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> ' + _("Syncing...");
+        button.innerHTML = '<i class="pf-v5-pficon pf-v5-pficon-spinner dc-spinner fa-spin" aria-hidden="true"></i> ' + _("Syncing...");
         button.disabled = true;
         
         try {
@@ -3911,7 +3916,7 @@ udp_preference_limit = 0
         const button = document.getElementById('force-dhcp-failover');
         const originalText = button.innerHTML;
 
-        button.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> ' + _("Processing...");
+        button.innerHTML = '<i class="pf-v5-pficon pf-v5-pficon-spinner dc-spinner fa-spin" aria-hidden="true"></i> ' + _("Processing...");
         button.disabled = true;
 
         cockpit.spawn(['/usr/local/bin/dhcp-fsmo-manager.sh'], { superuser: "try" })
@@ -4367,7 +4372,7 @@ INTERFACESv6=""
         const button = document.getElementById('save-dhcp-config');
         const originalText = button.innerHTML;
         
-        button.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> ' + _("Saving...");
+        button.innerHTML = '<i class="pf-v5-pficon pf-v5-pficon-spinner dc-spinner fa-spin" aria-hidden="true"></i> ' + _("Saving...");
         button.disabled = true;
         
         // Get form values
@@ -4550,7 +4555,7 @@ host dc-server {
         const button = document.getElementById('sync-ntp-config');
         const originalText = button.innerHTML;
         
-        button.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> ' + _("Syncing...");
+        button.innerHTML = '<i class="pf-v5-pficon pf-v5-pficon-spinner dc-spinner fa-spin" aria-hidden="true"></i> ' + _("Syncing...");
         button.disabled = true;
         
         cockpit.spawn(['/usr/local/bin/ntp-fsmo-manager.sh'], { superuser: "try" })
@@ -4573,7 +4578,7 @@ host dc-server {
         const button = document.getElementById('force-ntp-failover');
         const originalText = button.innerHTML;
         
-        button.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> ' + _("Reconfiguring...");
+        button.innerHTML = '<i class="pf-v5-pficon pf-v5-pficon-spinner dc-spinner fa-spin" aria-hidden="true"></i> ' + _("Reconfiguring...");
         button.disabled = true;
         
         cockpit.spawn(['/usr/local/bin/ntp-fsmo-manager.sh'], { superuser: "try" })
@@ -4730,7 +4735,7 @@ time.cloudflare.com`;
         const button = document.getElementById('save-ntp-config');
         const originalText = button.innerHTML;
         
-        button.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> ' + _("Saving...");
+        button.innerHTML = '<i class="pf-v5-pficon pf-v5-pficon-spinner dc-spinner fa-spin" aria-hidden="true"></i> ' + _("Saving...");
         button.disabled = true;
         
         // Get form values

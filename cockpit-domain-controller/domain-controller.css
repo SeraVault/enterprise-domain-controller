@@ -25,7 +25,11 @@
 #domain-controller {
     overflow-y: auto;
     height: 100vh;
-    padding: var(--pf-v5-global--spacer--md);
+}
+
+/* PatternFly page section spacing */
+.pf-v5-c-page__main-section + .pf-v5-c-page__main-section {
+    padding-top: var(--pf-v5-global--spacer--md);
 }
 
 /* Domain Controller specific styles */
@@ -78,6 +82,21 @@
 .domain-status-card {
     margin-bottom: var(--pf-v5-global--spacer--lg);
 }
+
+/* ── Custom icon classes (chevrons, crown, spinner) ─────────────────────── */
+.dc-icon {
+    display: inline-block;
+    font-style: normal;
+    line-height: 1;
+    vertical-align: middle;
+}
+.dc-icon-angle-down::before  { content: "▾"; font-size: 1.1em; }
+.dc-icon-angle-right::before { content: "▸"; font-size: 1.1em; }
+.dc-icon-crown::before       { content: "♛"; font-size: 1em; color: var(--pf-v5-global--warning-color--100, #f0ab00); }
+
+/* Spinner rotation animation for the pficon-spinner */
+@keyframes dc-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.dc-spinner { display: inline-block; animation: dc-spin 1s linear infinite; }
 
 .domain-statistics {
     margin-bottom: var(--pf-v5-global--spacer--lg);
