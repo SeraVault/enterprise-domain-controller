@@ -315,11 +315,6 @@ generate_dhcp_config() {
         # PDC should run DHCP service
         local dhcp_config_file="${DHCP_CONFIG_DIR}/dhcpd.conf.active"
 
-        # Check if we have existing DHCP configuration in SYSVOL
-        if [ -f "${DHCP_CONFIG_DIR}/dhcp-settings.conf" ]; then
-            source "${DHCP_CONFIG_DIR}/dhcp-settings.conf"
-        fi
-
         # Generate DHCP configuration (use existing if available, or create basic one)
         if [ ! -f "$dhcp_config_file" ]; then
             local server_ip

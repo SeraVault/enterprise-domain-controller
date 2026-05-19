@@ -2250,7 +2250,8 @@ time.cloudflare.com"></textarea>
             })
             .then(() => {
                 console.log('DNS configured to use domain controller:', domainControllerIP);
-                console.log('Join command:', command.join(' '));
+                const safeCommand = command.map((a, i) => (i > 0 && command[i-1] === '-U') ? username + '%***' : a);
+                console.log('Join command:', safeCommand.join(' '));
                 // Now run the join command
                 this.uiManager.showLogModal("Joining domain...");
                 const proc = cockpit.spawn(command, { superuser: "try" });
@@ -2451,30 +2452,18 @@ allow all
 local stratum 10
 `;
         
-        // Backup existing chrony.conf and add our configuration
-        const commands = [
-            ['cp', '/etc/chrony.conf', '/etc/chrony.conf.backup'],
-            ['sh', '-c', `echo '${ntpConfig}' >> /etc/chrony.conf`],
-            ['systemctl', 'restart', 'chrony']
-        ];
-        
-        let configPromise = Promise.resolve();
-        commands.forEach(command => {
-            configPromise = configPromise.then(() => {
-                return cockpit.spawn(command, { superuser: "try" }).catch(err => {
-                    console.log('NTP config command failed:', err);
-                });
-            });
-        });
-        
-        configPromise.then(() => {
-            console.log('PDC NTP configuration completed');
-        });
+        // Backup existing chrony.conf and append our configuration via tee (no shell injection)
+        cockpit.spawn(['cp', '/etc/chrony.conf', '/etc/chrony.conf.backup'], { superuser: "try" })
+            .catch(err => console.log('NTP config backup failed:', err))
+            .then(() => cockpit.spawn(['tee', '-a', '/etc/chrony.conf'], { superuser: "try" }).input(ntpConfig))
+            .then(() => cockpit.spawn(['systemctl', 'restart', 'chrony'], { superuser: "try" }))
+            .then(() => console.log('PDC NTP configuration completed'))
+            .catch(err => console.log('NTP config command failed:', err));
     }
 
     configureNTPForAdditionalDC(pdcIP) {
         console.log('Configuring NTP for additional domain controller');
-        
+
         // Additional DC should get time from PDC, not external sources
         const ntpConfig = `
 # NTP configuration for additional domain controller (added by cockpit-domain-controller)
@@ -2489,26 +2478,14 @@ local stratum 15
 # Allow time serving to domain clients
 allow all
 `;
-        
-        // Backup existing chrony.conf and add our configuration
-        const commands = [
-            ['cp', '/etc/chrony.conf', '/etc/chrony.conf.backup'],
-            ['sh', '-c', `echo '${ntpConfig}' >> /etc/chrony.conf`],
-            ['systemctl', 'restart', 'chrony']
-        ];
-        
-        let configPromise = Promise.resolve();
-        commands.forEach(command => {
-            configPromise = configPromise.then(() => {
-                return cockpit.spawn(command, { superuser: "try" }).catch(err => {
-                    console.log('NTP config command failed:', err);
-                });
-            });
-        });
-        
-        configPromise.then(() => {
-            console.log('Additional DC NTP configuration completed');
-        });
+
+        // Backup existing chrony.conf and append our configuration via tee (no shell injection)
+        cockpit.spawn(['cp', '/etc/chrony.conf', '/etc/chrony.conf.backup'], { superuser: "try" })
+            .catch(err => console.log('NTP config backup failed:', err))
+            .then(() => cockpit.spawn(['tee', '-a', '/etc/chrony.conf'], { superuser: "try" }).input(ntpConfig))
+            .then(() => cockpit.spawn(['systemctl', 'restart', 'chrony'], { superuser: "try" }))
+            .then(() => console.log('Additional DC NTP configuration completed'))
+            .catch(err => console.log('NTP config command failed:', err));
     }
 
     forceLeaveCleanup() {
@@ -3124,13 +3101,10 @@ allow all
 local stratum 10
 `;
 
-        // Append NTP configuration to chrony.conf
-        const configCommand = `echo '${ntpConfig}' >> /etc/chrony/chrony.conf`;
-        
-        return cockpit.spawn(['sh', '-c', configCommand], { superuser: "try" })
+        // Append NTP configuration to chrony.conf via tee (no shell injection)
+        return cockpit.spawn(['tee', '-a', '/etc/chrony/chrony.conf'], { superuser: "try" }).input(ntpConfig)
             .then(() => {
                 console.log('NTP configuration added to chrony.conf');
-                // Restart chrony service to apply changes
                 return cockpit.spawn(['systemctl', 'restart', 'chrony'], { superuser: "try" });
             })
             .then(() => {
@@ -3143,14 +3117,14 @@ local stratum 10
 
     configureNTPForAdditionalDC(pdcIP, ntpServers = null) {
         console.log('Configuring NTP for additional domain controller, PDC IP:', pdcIP);
-        
+
         // Parse fallback NTP servers (comma-separated) or use defaults
         const defaultServers = 'time.cloudflare.com,time.google.com';
         const serverList = (ntpServers || defaultServers).split(',').map(s => s.trim()).filter(s => s);
-        
+
         // Build fallback NTP configuration
         const fallbackLines = serverList.map(server => `pool ${server} iburst`).join('\n');
-        
+
         // Additional DCs should get time from the PDC Emulator
         const ntpConfig = `
 # NTP configuration for additional domain controller (added by cockpit-domain-controller)
@@ -3167,13 +3141,10 @@ allow all
 local stratum 10
 `;
 
-        // Append NTP configuration to chrony.conf
-        const configCommand = `echo '${ntpConfig}' >> /etc/chrony/chrony.conf`;
-        
-        return cockpit.spawn(['sh', '-c', configCommand], { superuser: "try" })
+        // Append NTP configuration to chrony.conf via tee (no shell injection)
+        return cockpit.spawn(['tee', '-a', '/etc/chrony/chrony.conf'], { superuser: "try" }).input(ntpConfig)
             .then(() => {
                 console.log('NTP configuration added to chrony.conf');
-                // Restart chrony service to apply changes
                 return cockpit.spawn(['systemctl', 'restart', 'chrony'], { superuser: "try" });
             })
             .then(() => {
